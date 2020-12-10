@@ -22,11 +22,6 @@ With Sphinx installed locally, you can build the HTML files using ::
   ./build_docs
 
 
-File editors and viewers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The ``.drawio`` files require the open source editor from https://www.diagrams.net/.
-
 There is a very helpful VS Code extension called `reStructuredText <https://github.com/vscode-restructuredtext/vscode-restructuredtext>`_ that provides a live preview of reST files using the Sphinx theme from the most recent build.
 
 .. image:: images/vscode_plugin.png
@@ -36,6 +31,19 @@ GitHub Actions and Pages
 
 This documentation is automatically built and published using GitHub Actions and GitHub pages. There is a workflow definition file in ``/.github/workflows/`` that creates a GitHub Action that triggers the build process whenever there is a push to the `master` branch.
 
+File editors and viewers
+----------------------------------------
+
+The ``.drawio`` files require the open source editor from https://www.diagrams.net/.
+
+The Python extension for VS Code will resolve modules better if you include a ``/.vscode/settings.json`` (this file is deliberately ignored via ``/.gitignore``) with the configuration::
+
+  {
+    "python.analysis.extraPaths": [
+        "server"
+    ],
+    "restructuredtext.confPath": "${workspaceFolder}/docs"
+  }
 
 Development environment
 ----------------------------------------
