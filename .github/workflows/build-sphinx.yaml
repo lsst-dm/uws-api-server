@@ -15,7 +15,7 @@ jobs:
     # ===============================
     - name: Commit documentation changes
       run: |
-        git clone https://github.com/lsst-dm/uws-api-server.git --branch gh-pages --single-branch gh-pages
+        git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/lsst-dm/uws-api-server.git --branch gh-pages --single-branch gh-pages
         cp -r docs/_build/html/* gh-pages/
         cp -r docs/api gh-pages/
         cd gh-pages
