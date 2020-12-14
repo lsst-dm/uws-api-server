@@ -1,5 +1,6 @@
-htcondor
 tornado
 pyyaml
 pyjson
 requests
+kubernetes == 11.0.0
+jinja2 == 2.11.2

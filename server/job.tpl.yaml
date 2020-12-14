@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ name }}
+  namespace: {{ namespace }}
+spec:
+  backoffLimit: {{ backoffLimit }}
+  # activeDeadlineSeconds: {{ activeDeadlineSeconds }}
+  # Reference: https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs
+  #   "Note that this TTL mechanism is alpha, with feature gate TTLAfterFinished. 
+  #   For more information, see the documentation for TTL controller for 
+  #   finished resources."
+  # ttlSecondsAfterFinished: 30
+  template:
+    metadata:
+      labels:
+        task: {{ container_name }}
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: {{ container_name }}
+        securityContext:
+          runAsUser: 1001
+          runAsGroup: 1001
+        image: {{ image }}
+        imagePullPolicy: IfNotPresent
+        # command: {{ command }}

@@ -3,11 +3,10 @@ import envvars
 import logging
 import tornado.ioloop
 import tornado.web
-from tornado.gen import coroutine
 import tornado
 import json
-import os
 from datetime import datetime, timedelta
+import kubejob
 
 # Configure logging
 log_format = "%(asctime)s  %(name)8s  %(levelname)5s  %(message)s"
@@ -109,6 +108,12 @@ def valid_job_id(job_id):
     return isinstance(job_id, str) and len(job_id) > 0 and job_id != 'invalid_job_id'
 
 class JobHandler(BaseHandler):
+    def put(self):
+        # response = kubejob.test_credentials()
+        response = kubejob.create_job()
+        print(response)
+        self.write(json.dumps(response, indent=4, default = json_converter))
+
     def get(self, job_id):
         response = {}
         # <job> object: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobobj
@@ -153,6 +158,7 @@ def make_app(base_path=''):
     return tornado.web.Application(
         [
             (r"{}/job/list/(.*)".format(base_path), JobListHandler),
+            (r"{}/job".format(base_path), JobHandler),
             (r"{}/job/(.*)".format(base_path), JobHandler),
         ],
         **settings

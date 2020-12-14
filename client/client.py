@@ -1,13 +1,7 @@
 from globals import STATUS_OK, STATUS_ERROR, VALID_JOB_STATUSES
 import envvars
-import argparse
 import requests
 import json
-import yaml
-import sqlite3
-import random
-import time
-import asyncio
 
 # Import credentials and config from environment variables
 config = {
@@ -37,9 +31,22 @@ def get_job(job_id):
     return response
 
 
+def create_job():
+    response = requests.put(
+        '{}/job'.format(config['apiBaseUrl']),
+    )
+    print(response)
+    try:
+        print('PUT {}/job :\nHTTP code: {}\n{}\n\n'.format(envvars.API_BASEPATH, response.status_code, json.dumps(response.json(), indent=2)))
+    except:
+        print('PUT {}/job :\nHTTP code: {}\n{}\n\n'.format(envvars.API_BASEPATH, response.status_code, response))
+    return response
+
+
 if __name__ == '__main__':
 
     for category in ['all'] + VALID_JOB_STATUSES + ['fake']:
         response = list_jobs(category)
     for job_id in ['abcd123', 'invalid_job_id', '']:
         response = get_job(job_id)
+    response = create_job()
