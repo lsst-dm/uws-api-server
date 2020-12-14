@@ -11,3 +11,5 @@ db/**
 .vscode/*
 
 docs/_build/
+
+.codesync

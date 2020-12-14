@@ -1,4 +1,4 @@
-from globals import STATUS_OK, STATUS_ERROR, CONDOR_JOB_STATES
+from globals import STATUS_OK, STATUS_ERROR, VALID_JOB_STATUSES
 import envvars
 import logging
 import tornado.ioloop
@@ -7,8 +7,7 @@ from tornado.gen import coroutine
 import tornado
 import json
 import os
-from job_manager import JobManager
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Configure logging
 log_format = "%(asctime)s  %(name)8s  %(levelname)5s  %(message)s"
@@ -17,10 +16,12 @@ logging.basicConfig(
     handlers=[logging.FileHandler("test.log"), logging.StreamHandler()],
     format=log_format,
 )
-logger = logging.getLogger("main")
+logger = logging.getLogger("server")
 
-# Instantiate JobManager instance
-jm = JobManager()
+# The datetime type is not JSON serializable, so convert to string
+def json_converter(o):
+    if isinstance(o, datetime):
+        return o.__str__()
 
 class BaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
@@ -70,91 +71,89 @@ class BaseHandler(tornado.web.RequestHandler):
         return value
 
 
+class JobListHandler(BaseHandler):
+    def get(self, category):
+        # UWS Schema: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#UWSSchema
+        response = {
+            'job_ids': [],
+        }
+        all_jobs = [
+            'dummy_job_id_0_completed',
+            'dummy_job_id_1_completed',
+            'dummy_job_id_2_pending',
+            'dummy_job_id_3_executing',
+            'dummy_job_id_4',
+            'dummy_job_id_5',
+            'dummy_job_id_6',
+        ]
+        if category == 'all':
+            response['job_ids'] = all_jobs
+        elif category == 'completed':
+            response['job_ids'] = all_jobs[0:2]
+        elif category == 'pending':
+            response['job_ids'] = [all_jobs[2]]
+        elif category == 'executing':
+            response['job_ids'] = [all_jobs[3]]
+        elif category in VALID_JOB_STATUSES:
+            response['job_ids'] = [all_jobs[4]]
+        else:
+            response['message'] = 'Valid job categories are: {}'.format(VALID_JOB_STATUSES)
+            self.set_status(400)
+            self.write(response)
+            self.finish()
+            return
+        self.write(response)
+
+def valid_job_id(job_id):
+    # For testing purposes, treat the string 'invalid_job_id' as an invalid job_id
+    return isinstance(job_id, str) and len(job_id) > 0 and job_id != 'invalid_job_id'
+
 class JobHandler(BaseHandler):
-    def get(self):
-        response = {
-            'status': STATUS_OK,
-            'msg': '',
-            'job': {},
-        }
-        job_id = self.get_query_argument('id')
-        job_info = jm.status(job_id)
-        if not job_info:
-            response['status'] = STATUS_ERROR
-            response['msg'] = 'Job not found'
-            self.write(response)
-            return
-        response['job']['clusterId'] = job_info['ClusterId']
-        response['job']['state'] = CONDOR_JOB_STATES[job_info['JobStatus']]
-        if job_info['JobStatus'] == 4:
-            response['job']['timeCompleted'] = datetime.fromtimestamp(job_info['CompletionDate']).strftime("%A, %B %d, %Y %I:%M:%S")
-        self.write(response)
-
-    def post(self):
-        response = {
-            'status': STATUS_OK,
-            'msg': '',
-            'job_id': None,
-            'cluster_id': None,
-        }
-        job_type = self.getarg('type')
-        job_env = self.getarg('env')
-        log_dir = self.getarg('log_dir')
-        # status, msg, response['job_id'], response['cluster_id'] = jm.launch(job_type, job_env, log_dir)
-
-        status, msg, job_id = jm.register_job({
-            'type': job_type,
-            'env': job_env,
-            'log_dir': log_dir,
-        })
-        if status != STATUS_OK:
-            response['status'] = STATUS_ERROR
-            response['msg'] = msg
-            self.write(response)
-            return
-        response['job_id'] = job_id
-        status, msg = jm.init(job_id)
-        if status != STATUS_OK:
-            response['status'] = STATUS_ERROR
-            response['msg'] = msg
-            self.write(response)
-            return
-        self.write(response)
-
-
-class MonitorHandler(BaseHandler):
-    async def post(self):
-        response = {
-            'status': STATUS_OK,
-            'msg': '',
-        }
-        filename = self.getarg('filename')
-        duration = self.getarg('duration')
-        status, msg = await jm.monitor(filename, duration)
-        if status != STATUS_OK:
-            response['status'] = STATUS_ERROR
-            response['msg'] = msg
-        self.write(response)
-
-
-class MonitorCompleteHandler(BaseHandler):
-    def get(self):
-        response = {
-            'status': STATUS_OK,
-            'msg': '',
-        }
-        job_id = self.getarg('id')
-        logger.info('Data arrived for job "{}". Launching job...'.format(job_id))
-        status, msg, response['cluster_id'] = jm.launch(job_id)
-        self.write(response)
+    def get(self, job_id):
+        response = {}
+        # <job> object: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobobj
+        # If no job_id is provided, then the request is malformed:
+        if isinstance(job_id, str) and len(job_id) == 0:
+            self.set_status(400)
+            self.write(json.dumps(response, indent=4, default = json_converter))
+            self.finish()
+        # If the job_id is provided but is 
+        elif not valid_job_id(job_id):
+            self.set_status(404)
+            self.write(json.dumps(response, indent=4, default = json_converter))
+            self.finish()
+        else:
+            endTime = datetime.utcnow()
+            startTime = endTime - timedelta(hours=1.0)
+            creationTime = startTime - timedelta(hours=1.0)
+            response = {
+                'jobId': job_id,
+                'runId': 'run-{}'.format(job_id),
+                'ownerId': 'jsmith',
+                'creationTime': creationTime,
+                'startTime': startTime,
+                'endTime': endTime,
+                'executionDuration': endTime - startTime,
+                'jobInfo': {
+                    'anything': 'that',
+                    'you': 'want',
+                },
+                'results': {},
+                'parameters': {
+                    'first': 1.0,
+                    'second': 'two',
+                },
+                'errorSummary': '',
+            }
+            self.write(json.dumps(response, indent=4, default = json_converter))
 
 
 def make_app(base_path=''):
     settings = {"debug": True}
     return tornado.web.Application(
         [
-            (r"{}/job".format(base_path), JobHandler),
-            (r"{}/monitor/complete".format(base_path), MonitorCompleteHandler),
+            (r"{}/job/list/(.*)".format(base_path), JobListHandler),
+            (r"{}/job/(.*)".format(base_path), JobHandler),
         ],
         **settings
     )
@@ -163,5 +162,5 @@ def make_app(base_path=''):
 if __name__ == "__main__":
     app = make_app(base_path=envvars.API_BASEPATH)
     app.listen(envvars.API_PORT)
-    logger.info('Running at localhost:{}{}'.format(envvars.API_PORT, envvars.API_BASEPATH))
+    logger.info('Running at {}:{}{}'.format(envvars.API_DOMAIN, envvars.API_PORT, envvars.API_BASEPATH))
     tornado.ioloop.IOLoop.current().start()

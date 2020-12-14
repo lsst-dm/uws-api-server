@@ -1,4 +1,4 @@
-from globals import STATUS_OK, STATUS_ERROR
+from globals import STATUS_OK, STATUS_ERROR, VALID_JOB_STATUSES
 import envvars
 import argparse
 import requests
@@ -15,120 +15,31 @@ config = {
 }
 
 
-def db_open_conn(db_file='', read_only=True):
-    if read_only:
-        db = sqlite3.connect('file:{}?mode=ro'.format(db_file), uri=True)
-    else:
-        db = sqlite3.connect('file:{}'.format(db_file), uri=True)
-    return [db, db.cursor()]
-
-
-def db_close_conn(db):
-    db.commit()
-    db.close()
-
-
-def query_butler_repo_for_filter(conf):
-
-    db_file = conf['data']['db']
-    filter = conf['data']['filter']
-
-    [db_conn, db_cursor] = db_open_conn(db_file=db_file)
-
-    ccd_nums = []
-    visit_ids = []
-    # minId = (0,)
-    results = db_cursor.execute(
-        'SELECT id,visit,ccd,ccdnum FROM raw WHERE filter=?', (filter,))
-    data = []
-    for row in results:
-        # print('ID: {}\tVISIT: {}\tCCD: {}\tccd_num: {}'.format(*row))
-        row_id = row[0]
-        visit_id = row[1]
-        ccd = row[2]
-        ccdnum = row[3]
-        if ccd != ccdnum:
-            print('Mismatched CCD and ccd_num:')
-            print('\tID: {}\tVISIT: {}\tCCD: {}\tccd_num: {}'.format(*row))
-            import sys
-            sys.exit()
-        data.append({
-            'row_id': row_id,
-            'visit_id': visit_id,
-            'ccd': ccd,
-            'filter': filter,
-        })
-    db_close_conn(db_conn)
-    return data
-
-
-def get_job_status(job_id):
-    r = requests.get(
-        '{}/job'.format(config['apiBaseUrl']),
-        params={
-            'id': job_id
-        }
+def list_jobs(category):
+    response = requests.get(
+        '{}/job/list/{}'.format(config['apiBaseUrl'], category),
     )
-    response = r.json()
+    try:
+        print('GET {}/job/list/{} :\nHTTP code: {}\n{}\n\n'.format(envvars.API_BASEPATH, category, response.status_code, json.dumps(response.json(), indent=2)))
+    except:
+        print('GET {}/job/list/{} :\nHTTP code: {}\n{}\n\n'.format(envvars.API_BASEPATH, category, response.status_code, response))
     return response
 
 
-
-def post_job_ap(conf, image):
-    r = requests.post(
-        '{}/job'.format(config['apiBaseUrl']),
-        json={
-            'type': 'ap',
-            'env': {
-                'AP_JOB_OUTPUT_DIR': conf['job']['output_dir'],
-                'AP_VISIT_ID': image['visit_id'],
-                'AP_CCD_NUM': image['ccd'],
-                'AP_REPO': conf['data']['repo'],
-                'AP_TEMPLATE': conf['data']['template'],
-                'AP_CALIB': conf['data']['calib'],
-                'AP_FILTER': conf['data']['filter'],
-            },
-            'log_dir': conf['job']['log_dir'],
-        }
+def get_job(job_id):
+    response = requests.get(
+        '{}/job/{}'.format(config['apiBaseUrl'], job_id),
     )
-    response = r.json()
+    try:
+        print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(envvars.API_BASEPATH, job_id, response.status_code, json.dumps(response.json(), indent=2)))
+    except:
+        print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(envvars.API_BASEPATH, job_id, response.status_code, response))
     return response
 
 
 if __name__ == '__main__':
-    # Define and parse input arguments 
-    parser = argparse.ArgumentParser(description='Manage HTCondor jobs.')
-    parser.add_argument(
-        '--config',
-        dest='config',
-        type=argparse.FileType('r'),
-        nargs='?',
-        help='Job config file',
-        required=True
-    )
-    parser.add_argument(
-        '--duration',
-        dest='duration',
-        type=int,
-        nargs='?',
-        help='Duration in seconds',
-        required=False
-    )
-    args = parser.parse_args()
 
-    # Load the client config that defines the location of the Butler repo containing the data
-    configPath = args.config.name
-    with open(configPath, 'r') as f:
-        conf = yaml.load(f, Loader=yaml.SafeLoader)
-
-    # Request four independent jobs in rapid succession to demonstrate parallelism
-    for i in range(1,2):
-        # Select random image from Butler repo
-        data = query_butler_repo_for_filter(conf)
-        random_image = random.choice(data)
-        print('Random image from selected data: {}'.format(json.dumps(random_image)))
-        # Alert production job type specified
-        response = post_job_ap(conf, random_image)
-        cluster_id = response['cluster_id']
-        job_id = response['job_id']
-        print('POST /api/v1/job : {}'.format(json.dumps(response)))
+    for category in ['all'] + VALID_JOB_STATUSES + ['fake']:
+        response = list_jobs(category)
+    for job_id in ['abcd123', 'invalid_job_id', '']:
+        response = get_job(job_id)

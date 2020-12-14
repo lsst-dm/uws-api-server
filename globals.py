@@ -10,3 +10,16 @@ CONDOR_JOB_STATES = {
     6: 'transferring_output',
     7: 'suspended',
 }
+
+# UWS Schema: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#UWSSchema
+VALID_JOB_STATUSES = [
+    'pending',
+    'queued',
+    'executing',
+    'completed',
+    'error',
+    'unknown',
+    'held',
+    'suspended',
+    'aborted',
+]
