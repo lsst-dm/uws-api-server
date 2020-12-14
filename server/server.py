@@ -161,6 +161,6 @@ def make_app(base_path=''):
 
 if __name__ == "__main__":
     app = make_app(base_path=envvars.API_BASEPATH)
-    app.listen(envvars.API_PORT)
+    app.listen(int(envvars.API_PORT))
     logger.info('Running at {}:{}{}'.format(envvars.API_DOMAIN, envvars.API_PORT, envvars.API_BASEPATH))
     tornado.ioloop.IOLoop.current().start()
