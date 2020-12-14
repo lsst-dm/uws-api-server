@@ -17,11 +17,16 @@ spec:
         task: {{ container_name }}
     spec:
       restartPolicy: Never
+      volumes:
+      - name: job-scripts
+        configMap:
+          name: test-job-scripts
       containers:
       - name: {{ container_name }}
-        securityContext:
-          runAsUser: 1001
-          runAsGroup: 1001
         image: {{ image }}
         imagePullPolicy: IfNotPresent
-        # command: {{ command }}
+        command: {{ command }}
+        volumeMounts:
+        - name: job-scripts
+          mountPath: '/opt/init.sh'
+          subPath: 'init.sh'

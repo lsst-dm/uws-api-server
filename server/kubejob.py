@@ -53,8 +53,8 @@ def create_job():
             namespace=namespace,
             backoffLimit=2,
             container_name='test-job-container',
-            image='hello-world',
-            # command=input["command"],
+            image='lsstsqre/centos:7-stack-lsst_distrib-v21_0_0',
+            command=['/bin/bash', '-c', 'bash /opt/init.sh'],
         ))
         api_response = api_batch_v1.create_namespaced_job(
             namespace=namespace, body=job_body
