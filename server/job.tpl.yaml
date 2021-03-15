@@ -4,6 +4,8 @@ metadata:
   name: {{ name }}
   namespace: {{ namespace }}
 spec:
+  completions: {{ replicas }}
+  parallelism: {{ replicas }}
   backoffLimit: {{ backoffLimit }}
   # activeDeadlineSeconds: {{ activeDeadlineSeconds }}
   # Reference: https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs
@@ -14,19 +16,44 @@ spec:
   template:
     metadata:
       labels:
-        task: {{ container_name }}
+        type: "uws-job"
+        jobId: {{ jobId }}
     spec:
       restartPolicy: Never
+      securityContext:
+        runAsUser: 73006
+        runAsGroup: 73006
+        # fsGroup: 73006
       volumes:
-      - name: job-scripts
-        configMap:
-          name: test-job-scripts
+      - name: scratch
+        persistentVolumeClaim:
+          claimName: nfs-scratch-pvc
+      - name: data
+        persistentVolumeClaim:
+          claimName: nfs-data-pvc
+      - name: nfs-oods-comcam
+        persistentVolumeClaim:
+          claimName: nfs-oods-comcam-pvc
       containers:
       - name: {{ container_name }}
         image: {{ image }}
         imagePullPolicy: IfNotPresent
         command: {{ command }}
+        env:
+          - name: "DATA_DIR_COMCAM"
+            value: "/data/lsstdata/comcam/oods/butler/repo"
+          {% for env in environment %}
+          - name: {{ env.name }}
+            value: {{ env.value }}
+          {% endfor %}
         volumeMounts:
-        - name: job-scripts
-          mountPath: '/opt/init.sh'
-          subPath: 'init.sh'
+        - name: scratch
+          mountPath: /scratch/uws
+          subPath: uws
+        - name: data
+          mountPath: /lsstdata/offline/teststand
+          readOnly: true
+        - name: nfs-oods-comcam
+          mountPath: /data/lsstdata/comcam/oods/butler/repo
+          # readOnly: true
+

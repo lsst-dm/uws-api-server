@@ -1,3 +1,4 @@
+import globals
 import logging
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
@@ -6,23 +7,22 @@ import yaml
 from jinja2 import Template
 import uuid
 
-logger = logging.getLogger(__name__)
+# Configure logging
+log = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    '%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+log.addHandler(handler)
+try:
+    log.setLevel(os.environ['LOG_LEVEL'].upper())
+except:
+    log.setLevel('WARNING')
 
 config.load_incluster_config()
 configuration = client.Configuration()
 api_batch_v1 = client.BatchV1Api(client.ApiClient(configuration))
 api_v1 = client.CoreV1Api(client.ApiClient(configuration))
-
-def test_credentials():
-    api_response = {'message': 'ERROR: Failure connecting to Kubernetes API server'}
-    try:
-        api_response = api_v1.get_api_resources()
-        logging.info(api_response)
-        api_response = {'message': 'Success connecting to Kubernetes API server'}
-    except ApiException as e:
-        print("Exception when calling API: {}\n".format(e))
-    return api_response
-
 
 def get_namespace():
     # When running in a pod, the namespace should be determined automatically,
@@ -42,28 +42,95 @@ def generate_uuid():
     return str(uuid.uuid4()).replace("-", "")
 
 
-def create_job():
+def get_job_name_from_id(job_id):
+    return 'uws-job-{}'.format(job_id)
+
+
+def create_job(command, workdir, replicas=1, environment=None):
+    response = {
+        'job_id': None,
+        'api_response': None,
+        'message': None,
+        'status': globals.STATUS_OK,
+    }
     try:
         namespace = get_namespace()
+        job_id = generate_uuid()
+        job_name = get_job_name_from_id(job_id)
         with open(os.path.join(os.path.dirname(__file__), "job.tpl.yaml")) as f:
             templateText = f.read()
         template = Template(templateText)
         job_body = yaml.safe_load(template.render(
-            name='test-job-{}'.format(generate_uuid()),
+            name=job_name,
+            jobId=job_id,
             namespace=namespace,
             backoffLimit=2,
-            container_name='test-job-container',
-            image='lsstsqre/centos:7-stack-lsst_distrib-v21_0_0',
-            command=['/bin/bash', '-c', 'bash /opt/init.sh'],
+            replicas=replicas,
+            container_name='uws-job',
+            image='lsstsqre/centos:d_latest',
+            command=["/bin/bash", "-c", '''cd {} && {}'''.format(workdir, command)],
+            environment=environment,
         ))
+        log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(
             namespace=namespace, body=job_body
         )
-        # logger.info("Job {} created".format(input["configjob"]["metadata"]["jobId"]))
+        response['job_id'] = job_id
+        response['api_response'] = api_response
+        log.debug("Job {} created")
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+        response['message'] = msg
+        response['status'] = globals.STATUS_ERROR
+    return response
+
+def list_job(job_id):
+    response = {}
+    try:
+        namespace = get_namespace()
+        # job_name = get_job_name_from_id
+        api_response = api_batch_v1.list_namespaced_job(
+            namespace=namespace, 
+            label_selector=f'jobId={job_id}'
+        )
+        for item in api_response.items:
+            response = {
+                'name': item.metadata.name,
+                'job_id': item.metadata.labels['jobId'],
+                'command': item.spec.template.spec.containers[0].command,
+            }
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+    return response
+
+def delete_job(job_id):
+    response = {
+        'status': globals.STATUS_OK,
+        'message': '',
+        'code': 200,
+    }
+    try:
+        namespace = get_namespace()
+        job_name = get_job_name_from_id(job_id)
+        api_response = api_batch_v1.delete_namespaced_job(
+            namespace=namespace, 
+            name=job_name,
+        )
+        response['status']  = api_response.status if api_response.status else response['status']
+        response['message'] = api_response.status if api_response.message else response['message']
+        response['code']    = api_response.status if api_response.code else response['code']
     except ApiException as e:
-        msg = "Exception when calling BatchV1Api->create_namespaced_job: {}\n".format(e)
-        logger.error(msg)
-        api_response = {
-            'message': msg
-        }
-    return api_response
+        msg = str(e)
+        if msg.startswith('(404)'):
+            response['code'] = 404
+        else:
+            response['status'] = globals.STATUS_ERROR
+            response['message'] = msg
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+        response['status'] = globals.STATUS_ERROR
+        response['message'] = msg
+    return response
