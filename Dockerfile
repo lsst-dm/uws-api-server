@@ -3,10 +3,12 @@ FROM ubuntu:20.04
 # Install dependencies
 RUN apt-get update && apt-get install -y \
   python3-pip \
+  curl \
+  rsync \
   && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-ARG UID=1001
+ARG UID=73006
 RUN echo "Building image with \"worker\" user ID: ${UID}"
 RUN useradd --create-home --shell /bin/bash worker --uid ${UID}
 USER worker
