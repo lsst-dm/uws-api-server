@@ -1,6 +1,7 @@
-tornado
-pyyaml
-pyjson
-requests
+# kubernetes v12.0.0 breaks the kubejob.py code
 kubernetes == 11.0.0
+tornado == 6.0.4
+# pyjwt == 1.7.1
+pyjson
+pyyaml == 5.3.1
 jinja2 == 2.11.2
