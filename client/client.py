@@ -19,14 +19,23 @@ def list_jobs(category):
     return response
 
 
-def get_job(job_id):
-    response = requests.get(
-        '{}/job/{}'.format(config['apiBaseUrl'], job_id),
-    )
-    try:
-        print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, response.status_code, json.dumps(response.json(), indent=2)))
-    except:
-        print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, response.status_code, response))
+def get_job(job_id, property=None):
+    if property:
+        response = requests.get(
+            '{}/job/{}/{}'.format(config['apiBaseUrl'], job_id, property),
+        )
+        try:
+            print('GET {}/job/{}/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, property, response.status_code, json.dumps(response.json(), indent=2)))
+        except:
+            print('GET {}/job/{}/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, property, response.status_code, response))
+    else:
+        response = requests.get(
+            '{}/job/{}'.format(config['apiBaseUrl'], job_id),
+        )
+        try:
+            print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, response.status_code, json.dumps(response.json(), indent=2)))
+        except:
+            print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, response.status_code, response))
     return response
 
 
@@ -44,20 +53,6 @@ def create_job():
     except:
         print('PUT {}/job :\npayload: {}\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, payload, response.status_code, response))
         return response.text
-
-
-def list_job(job_id):
-    response = requests.get(
-        '{}/job/{}'.format(config['apiBaseUrl'], job_id)
-    )
-    # print(response)
-    try:
-        print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, response.status_code, json.dumps(response.json(), indent=2)))
-        return response.json()
-    except:
-        print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, job_id, response.status_code, response.text))
-        return response.text
-
 
 def delete_job(job_id):
     response = requests.delete(

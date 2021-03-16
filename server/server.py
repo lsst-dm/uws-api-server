@@ -116,7 +116,7 @@ class JobListHandler(BaseHandler):
 
 def valid_job_id(job_id):
     # For testing purposes, treat the string 'invalid_job_id' as an invalid job_id
-    return isinstance(job_id, str) and len(job_id) > 0 and job_id != 'invalid_job_id'
+    return isinstance(job_id, str) and len(job_id) > 0
 
 
 def construct_job_object(job_info):
@@ -183,6 +183,7 @@ def construct_job_object(job_info):
         log.error(str(e))
     return job
 
+
 class JobHandler(BaseHandler):
     def put(self):
         try:
@@ -210,17 +211,27 @@ class JobHandler(BaseHandler):
             self.finish()
             return
         
-    def get(self, job_id):
+    def get(self, job_id, property=None):
+        # See https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#resourceuri
+        valid_properties = [
+            'phase',
+            # 'executionduration',
+            # 'destruction',
+            # 'error',
+            # 'quote',
+            'results',
+            'parameters',
+            # 'owner',
+        ]
         response = {}
-        # <job> object: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobobj
-        # If no job_id is provided, then the request is malformed:
-        if isinstance(job_id, str) and len(job_id) == 0:
-            self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+        # If no job_id is provided or it is invalid, then the request is malformed:
+        if not valid_job_id(job_id):
+            self.send_response('Invalid job ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
             self.finish()
             return
-        # If the job_id is provided but is 
-        elif not valid_job_id(job_id):
-            self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+        # 
+        elif isinstance(property, str) and property not in valid_properties:
+            self.send_response('Invalid job property requested.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
             self.finish()
             return
         else:
@@ -237,7 +248,17 @@ class JobHandler(BaseHandler):
                     self.finish()
                     return
                 job = construct_job_object(response)
-                self.send_response(job, indent=2)
+                
+                # If a specific job property was requested using an API endpoint 
+                # of the form `/job/[job_id]/[property]]`, return that property only.
+                # TODO: If the other API endpoints defined in the UWS pattern spec such 
+                # as `executionduration` are implemented, there will need to be a mapping 
+                # instead of direct key substitution, because `executionduration` corresponds
+                # to `executionDuration` in the job object spec.
+                if property in ['phase', 'results', 'parameters']:
+                    self.send_response(job[property], indent=2)
+                else:
+                    self.send_response(job, indent=2)
                 self.finish()
                 return
             except Exception as e:
@@ -266,9 +287,12 @@ def make_app(base_path=''):
     settings = {"debug": True}
     return tornado.web.Application(
         [
+            # TODO: Move the job list handler into the /job endpoint to better implement the UWS pattern spec
+            # See https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobList
             (r"{}/job/list/(.*)".format(base_path), JobListHandler),
-            (r"{}/job".format(base_path), JobHandler),
+            (r"{}/job/(.*)/(.*)".format(base_path), JobHandler),
             (r"{}/job/(.*)".format(base_path), JobHandler),
+            (r"{}/job".format(base_path), JobHandler),
         ],
         **settings
     )
