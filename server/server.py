@@ -7,8 +7,6 @@ import json
 import os
 from datetime import datetime, timedelta
 
-
-
 # Configure logging
 log = logging.getLogger("uws_api_server")
 handler = logging.StreamHandler()
@@ -21,6 +19,7 @@ try:
 except:
     log.setLevel('WARNING')
 
+# Load Kubernetes API
 try:
     import kubejob
 except:
@@ -81,7 +80,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if isinstance(o, datetime):
             return o.__str__()
         
-    def send_response(self, data, http_status_code=200, return_json=True, indent=None):
+    def send_response(self, data, http_status_code=globals.HTTP_OK, return_json=True, indent=None):
         if return_json:
             if indent:
                 self.write(json.dumps(data, indent=indent, default = self.json_converter))
@@ -95,56 +94,96 @@ class BaseHandler(tornado.web.RequestHandler):
 class JobListHandler(BaseHandler):
     def get(self, category):
         # UWS Schema: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#UWSSchema
-        response = {
-            'job_ids': [],
-        }
-        all_jobs = [
-            'dummy_job_id_0_completed',
-            'dummy_job_id_1_completed',
-            'dummy_job_id_2_pending',
-            'dummy_job_id_3_executing',
-            'dummy_job_id_4',
-            'dummy_job_id_5',
-            'dummy_job_id_6',
-        ]
         if category == 'all':
-            response['job_ids'] = all_jobs
-        elif category == 'completed':
-            response['job_ids'] = all_jobs[0:2]
-        elif category == 'pending':
-            response['job_ids'] = [all_jobs[2]]
-        elif category == 'executing':
-            response['job_ids'] = [all_jobs[3]]
-        elif category in globals.VALID_JOB_STATUSES:
-            response['job_ids'] = [all_jobs[4]]
+            results = kubejob.list_jobs()
+            if results['status'] != globals.STATUS_OK:
+                self.send_response(results['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+                self.finish()
+                return
         else:
-            response['message'] = 'Valid job categories are: {}'.format(globals.VALID_JOB_STATUSES)
-            self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST)
+            response = 'Valid job categories are: {}'.format(globals.VALID_JOB_STATUSES)
+            self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
             self.finish()
             return
-        self.send_response(response, indent=2)
+        # Construct the UWS-compatible list of job objects
+        jobs = []
+        for job_info in results['jobs']:
+            jobs.append(construct_job_object(job_info))
+        self.send_response(jobs, indent=2)
         self.finish()
         return
+
 
 def valid_job_id(job_id):
     # For testing purposes, treat the string 'invalid_job_id' as an invalid job_id
     return isinstance(job_id, str) and len(job_id) > 0 and job_id != 'invalid_job_id'
 
-class JobHandler(BaseHandler):
-    def delete(self, job_id):
-        response = kubejob.delete_job(
-            job_id=job_id, 
-        )
-        log.debug(response)
-        if response['status'] == globals.STATUS_ERROR:
-            self.send_response(response, http_status_code=globals.HTTP_SERVER_ERROR)
-        elif isinstance(response['code'], int) and response['code'] != 0:
-            self.send_response(response, http_status_code=response['code'], indent=2)
-        else:
-            self.send_response(response, indent=2)
-        self.finish()
-        return
+
+def construct_job_object(job_info):
+    job = {}
+    try:
+        creationTime = job_info['creation_time']
+        startTime = job_info['status']['start_time']
+        endTime = job_info['status']['completion_time']
+        destructionTime = None # TODO: Should we track deletion time?
+        try:
+            executionDuration = (endTime - startTime).total_seconds()
+        except:
+            executionDuration = None
+        try:
+            message = job_info['message']
+        except:
+            message = ''
+        # Determine job phase. For definitions see:
+        #     https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#ExecutionPhase
+        job_phase = 'unknown'
+        if creationTime:
+            job_phase = 'pending'
+        if startTime:
+            job_phase = 'queued'
+            if job_info['status']['active']:
+                job_phase = 'executing'
+        if endTime:
+            job_phase = 'completed'
+            if not job_info['status']['succeeded'] or job_info['status']['failed']:
+                job_phase = 'error'
         
+        # See job_schema.xml
+        #   https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobobj
+        job = {
+            'jobId': job_info['job_id'],
+            'runId': job_info['name'],
+            'ownerId': '', # TODO: Track identity of job owner
+            'phase': job_phase,
+            'creationTime': creationTime,
+            'startTime': startTime,
+            'endTime': endTime,
+            'executionDuration': executionDuration,
+            'destruction': destructionTime,
+            'parameters': {
+                'example_param_1': 1.0,
+                'example_param_2': 'two',
+            },
+            'results': [
+                {
+                    'id': 0,
+                    'uri': 'http://myserver.org/uws/jobs/jobid123/result/image',
+                    'mime-type': 'image/fits',
+                    'size': '3000960',
+                },
+            ],
+            'errorSummary': {
+                'message': message,
+            },
+            'jobInfo': {
+                'command': job_info['command'],
+            },
+        }
+    except Exception as e:
+        log.error(str(e))
+    return job
+
+class JobHandler(BaseHandler):
     def put(self):
         try:
             command = self.getarg('command') # required 
@@ -162,13 +201,17 @@ class JobHandler(BaseHandler):
             environment=environment,
         )
         log.debug(response)
-        self.send_response(response, indent=2)
-        self.finish()
-        return
+        if response['status'] != globals.STATUS_OK:
+            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+            self.finish()
+            return
+        else:
+            self.send_response(response, indent=2)
+            self.finish()
+            return
         
     def get(self, job_id):
         response = {}
-        log.debug(f'Get job_id = {job_id}')
         # <job> object: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobobj
         # If no job_id is provided, then the request is malformed:
         if isinstance(job_id, str) and len(job_id) == 0:
@@ -185,11 +228,16 @@ class JobHandler(BaseHandler):
                 response = kubejob.list_job(
                     job_id=job_id, 
                 )
-                # log.debug(response)
-                if response:
-                    self.send_response(response, indent=2)
-                else:
-                    self.send_response(response, http_status_code=globals.HTTP_NOT_FOUND)
+                if not isinstance(response['error_code'], int) or response['error_code'] == globals.HTTP_SERVER_ERROR:
+                    self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR)
+                    self.finish()
+                    return
+                if response['error_code'] == globals.HTTP_NOT_FOUND:
+                    self.send_response(response['message'], http_status_code=globals.HTTP_NOT_FOUND)
+                    self.finish()
+                    return
+                job = construct_job_object(response)
+                self.send_response(job, indent=2)
                 self.finish()
                 return
             except Exception as e:
@@ -198,41 +246,21 @@ class JobHandler(BaseHandler):
                 self.send_response(response, http_status_code=globals.HTTP_SERVER_ERROR, indent=2)
                 self.finish()
                 return
-                
-            endTime = datetime.utcnow()
-            startTime = endTime - timedelta(hours=1.0)
-            executionDuration = endTime - startTime,
-            creationTime = startTime - timedelta(hours=1.0)
-            destructionTime = endTime + timedelta(hours=1.0)
-            # See job_schema.xml
-            #   https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobobj
-            response = {
-                'jobId': job_id,
-                'runId': 'run-{}'.format(job_id),
-                'ownerId': 'jsmith',
-                'creationTime': creationTime,
-                'startTime': startTime,
-                'endTime': endTime,
-                'executionDuration': (endTime - startTime).total_seconds(),
-                'destruction': destructionTime,
-                'parameters': {
-                    'first': 1.0,
-                    'second': 'two',
-                },
-                'results': {
-                    'meets_criteria': False,
-                },
-                'errorSummary': '',
-                'jobInfo': {
-                    'anything': 'that',
-                    'you': 'want',
-                },
-            }
-            log.debug(json.dumps(response, indent=2, default = self.json_converter))
-            self.send_response(response, indent=2)
-            self.finish()
-            return
 
+    def delete(self, job_id):
+        response = kubejob.delete_job(
+            job_id=job_id, 
+        )
+        log.debug(response)
+        if response['status'] == globals.STATUS_ERROR:
+            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+        elif isinstance(response['code'], int) and response['code'] != globals.HTTP_OK:
+            self.send_response(response['message'], http_status_code=response['code'], return_json=False)
+        else:
+            self.send_response(response, indent=2)
+        self.finish()
+        return
+        
 
 def make_app(base_path=''):
     settings = {"debug": True}

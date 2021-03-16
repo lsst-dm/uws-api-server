@@ -77,7 +77,13 @@ def create_job(command, workdir, replicas=1, environment=None):
         )
         response['job_id'] = job_id
         response['api_response'] = api_response
-        log.debug("Job {} created")
+        log.debug(f"Job {job_name} created")
+    # TODO: Is there additional information to obtain from the ApiException?
+    # except ApiException as e:
+    #     msg = str(e)
+    #     log.error(msg)
+    #     response['status'] = globals.STATUS_ERROR
+    #     response['message'] = msg
     except Exception as e:
         msg = str(e)
         log.error(msg)
@@ -85,8 +91,59 @@ def create_job(command, workdir, replicas=1, environment=None):
         response['status'] = globals.STATUS_ERROR
     return response
 
+
+def list_jobs(phase=None):
+    jobs = []
+    response = {
+        'jobs': jobs,
+        'status': globals.STATUS_OK,
+        'message': '',
+    }
+    try:
+        namespace = get_namespace()
+        # job_name = get_job_name_from_id
+        api_response = api_batch_v1.list_namespaced_job(
+            namespace=namespace, 
+        )
+        # Assume only one job is in the list
+        for item in api_response.items:
+            jobs.append({
+                'name': item.metadata.name,
+                'creation_time': item.metadata.creation_timestamp,
+                'job_id': item.metadata.labels['jobId'],
+                'command': item.spec.template.spec.containers[0].command,
+                'status': {
+                    'active': True if item.status.active else False,
+                    'start_time': item.status.start_time,
+                    'completion_time': item.status.completion_time,
+                    'succeeded': True if item.status.succeeded else False,
+                    'failed': True if item.status.failed else False,
+                },
+            })
+        response['jobs'] = jobs
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+        response['status'] = globals.STATUS_ERROR
+        response['message'] = msg
+    return response
+    
 def list_job(job_id):
-    response = {}
+    response = {
+        'name': None,
+        'creation_time': None,
+        'job_id': job_id,
+        'command': None,
+        'status': {
+            'active': None,
+            'start_time': None,
+            'completion_time': None,
+            'succeeded': None,
+            'failed': None,
+        },
+        'message': '',
+        'error_code': globals.HTTP_NOT_FOUND,
+    }
     try:
         namespace = get_namespace()
         # job_name = get_job_name_from_id
@@ -94,22 +151,35 @@ def list_job(job_id):
             namespace=namespace, 
             label_selector=f'jobId={job_id}'
         )
+        # Assume only one job is in the list
         for item in api_response.items:
             response = {
                 'name': item.metadata.name,
+                'creation_time': item.metadata.creation_timestamp,
                 'job_id': item.metadata.labels['jobId'],
                 'command': item.spec.template.spec.containers[0].command,
+                'status': {
+                    'active': True if item.status.active else False,
+                    'start_time': item.status.start_time,
+                    'completion_time': item.status.completion_time,
+                    'succeeded': True if item.status.succeeded else False,
+                    'failed': True if item.status.failed else False,
+                },
+                'message': '',
+                'error_code': globals.HTTP_OK,
             }
     except Exception as e:
         msg = str(e)
         log.error(msg)
+        response['error_code'] = globals.HTTP_SERVER_ERROR
+        response['message'] = msg
     return response
 
 def delete_job(job_id):
     response = {
         'status': globals.STATUS_OK,
         'message': '',
-        'code': 200,
+        'code': globals.HTTP_OK,
     }
     try:
         namespace = get_namespace()
@@ -121,13 +191,14 @@ def delete_job(job_id):
         response['status']  = api_response.status if api_response.status else response['status']
         response['message'] = api_response.status if api_response.message else response['message']
         response['code']    = api_response.status if api_response.code else response['code']
+        response['message'] = api_response.status if api_response.message else response['message']
     except ApiException as e:
         msg = str(e)
+        response['message'] = msg 
         if msg.startswith('(404)'):
             response['code'] = 404
         else:
             response['status'] = globals.STATUS_ERROR
-            response['message'] = msg
     except Exception as e:
         msg = str(e)
         log.error(msg)

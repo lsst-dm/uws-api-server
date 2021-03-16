@@ -85,7 +85,3 @@ if __name__ == '__main__':
     if not create_response['message']:
         list_response = list_job(create_response['job_id'])
     
-    delete_response = delete_job('e13d8336c2e940ff8efb0d7f80cba384')
-    delete_response = delete_job('9072b44fb46d4a3aa57d513b28b72c3f')
-    delete_response = delete_job('b4c5336a0acf47e699bd0bb7a90f5d08')
-    delete_response = delete_job('8662576fbec64f5ca2f53ccaab8aafb0')
