@@ -39,10 +39,12 @@ def get_job(job_id, property=None):
     return response
 
 
-def create_job():
+def create_job(command='sleep 120', url=None, commit_ref=None):
     payload = {
-            'command': 'sleep 600',
-        }
+        'command': command,
+        'url': url,
+        'commit_ref': commit_ref,
+    }
     response = requests.put(
         '{}/job'.format(config['apiBaseUrl']),
         json=payload
@@ -73,10 +75,10 @@ if __name__ == '__main__':
     #     response = list_jobs(category)
     # for job_id in ['abcd123', 'invalid_job_id', '']:
     #     response = get_job(job_id)
-    response = list_job('')
-    response = list_job('fake')
+    response = get_job('')
+    response = get_job('fake')
     
     create_response = create_job()
     if not create_response['message']:
-        list_response = list_job(create_response['job_id'])
+        list_response = get_job(create_response['job_id'])
     

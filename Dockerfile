@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-ARG UID=73006
+ARG UID=1000
 RUN echo "Building image with \"worker\" user ID: ${UID}"
 RUN useradd --create-home --shell /bin/bash worker --uid ${UID}
 USER worker

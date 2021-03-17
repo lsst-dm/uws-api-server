@@ -20,12 +20,12 @@ spec:
         jobId: {{ jobId }}
     spec:
       restartPolicy: Never
-      securityContext:
-        runAsUser: 73006
-        runAsGroup: 73006
+      # securityContext:
+      #   runAsUser: 1001
+      #   runAsGroup: 1001
         # fsGroup: 73006
       volumes:
-      - name: scratch
+      - name: job-files
         persistentVolumeClaim:
           claimName: nfs-scratch-pvc
       - name: data
@@ -34,26 +34,84 @@ spec:
       - name: nfs-oods-comcam
         persistentVolumeClaim:
           claimName: nfs-oods-comcam-pvc
+      - name: nfs-oods-auxtel
+        persistentVolumeClaim:
+          claimName: nfs-oods-auxtel-pvc
+      {% if clone_dir and url %}
+      initContainers:
+      - name: {{ container_name }}-init
+        image: {{ image }}
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: job-files
+          mountPath: {{ uws_root_dir }}
+        env:
+          - name: "SRC_GIT_URL"
+            value: {{ url }}
+          - name: "GIT_COMMIT_REF"
+            value: {{ commit_ref }}
+          # The clone_dir is assumed to be a subfolder of uws_root_dir
+          - name: "GIT_CLONE_DIR"
+            value: {{ clone_dir }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          ls -la /uws/* && \
+          git config --global user.name "UWS Job"  && \
+          git config --global user.email "fake@example.com"  && \
+          echo "Cloning git repo ${SRC_GIT_URL} to ${GIT_CLONE_DIR} ..." && \
+          git clone "${SRC_GIT_URL}" "${GIT_CLONE_DIR}" || echo "Git repo already present." && \
+          echo "Moving to ${GIT_CLONE_DIR}" and fetching updates ... && \
+          cd "${GIT_CLONE_DIR}" && \
+          git fetch -a && \
+          echo "Resetting to HEAD ..." && \
+          git reset --quiet --hard HEAD && \
+        {% if commit_ref %}
+          echo "Checking out reference ${GIT_COMMIT_REF} ..." && \
+          git checkout "${GIT_COMMIT_REF}" && \
+        {% endif %}
+          echo "Pulling latest commits ..." && \
+          git pull && \
+          echo "Git repo is ready."
+      {% endif %}
       containers:
       - name: {{ container_name }}
         image: {{ image }}
         imagePullPolicy: IfNotPresent
         command: {{ command }}
         env:
+          # The "DATA_DIR_*" variables provide the job script with the path to the locations
+          # of the available mounted data Butler repos
           - name: "DATA_DIR_COMCAM"
             value: "/data/lsstdata/comcam/oods/butler/repo"
+          - name: "DATA_DIR_AUXTEL"
+            value: "/data/lsstdata/auxTel/oods/butler/repo"
+          {% if clone_dir %}
+          # The "JOB_SOURCE_DIR" provides the job script with the path to the location 
+          # of the cloned git repo (optional).
+          - name: "JOB_SOURCE_DIR"
+            value: {{ clone_dir }}
+          {% endif %}
+          # The "JOB_OUTPUT_DIR" provides the job script with the path to the output
+          # directory where the job results are expected to be stored.
+          - name: "JOB_OUTPUT_DIR"
+            value: "{{ job_output_dir }}"
+          # Custom environment variables are defined here if provided in the job creation request
           {% for env in environment %}
           - name: {{ env.name }}
             value: {{ env.value }}
           {% endfor %}
         volumeMounts:
-        - name: scratch
-          mountPath: /scratch/uws
-          subPath: uws
+        - name: job-files
+          mountPath: {{ uws_root_dir }}
         - name: data
           mountPath: /lsstdata/offline/teststand
           readOnly: true
         - name: nfs-oods-comcam
           mountPath: /data/lsstdata/comcam/oods/butler/repo
+          # readOnly: true
+        - name: nfs-oods-auxtel
+          mountPath: /data/lsstdata/auxTel/oods/butler/repo
           # readOnly: true
 

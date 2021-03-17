@@ -6,6 +6,7 @@ import os
 import yaml
 from jinja2 import Template
 import uuid
+# import hashlib
 
 # Configure logging
 log = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ def get_job_name_from_id(job_id):
     return 'uws-job-{}'.format(job_id)
 
 
-def create_job(command, workdir, replicas=1, environment=None):
+def create_job(command, url=None, commit_ref=None, replicas=1, environment=None):
     response = {
         'job_id': None,
         'api_response': None,
@@ -57,6 +58,17 @@ def create_job(command, workdir, replicas=1, environment=None):
         namespace = get_namespace()
         job_id = generate_uuid()
         job_name = get_job_name_from_id(job_id)
+        job_root_dir = os.path.join(globals.UWS_ROOT_DIR, 'jobs', job_id)
+        job_output_dir = os.path.join(job_root_dir, 'out')
+        if isinstance(url, str):
+            # stripped_url = f'{url}'.strip('/').strip('.git').strip('/').strip()
+            # hashed_url = hashlib.sha1(bytes(stripped_url, 'utf-8')).hexdigest()
+            clone_dir = os.path.join(job_root_dir, 'src')
+            full_command = '''cd {} && {}'''.format(clone_dir, command)
+        else:
+            clone_dir = None
+            full_command = '''{}'''.format(command)
+        
         with open(os.path.join(os.path.dirname(__file__), "job.tpl.yaml")) as f:
             templateText = f.read()
         template = Template(templateText)
@@ -67,9 +79,15 @@ def create_job(command, workdir, replicas=1, environment=None):
             backoffLimit=2,
             replicas=replicas,
             container_name='uws-job',
+            # TODO: Allow some flexibility in the Docker container image name and/or tag.
             image='lsstsqre/centos:d_latest',
-            command=["/bin/bash", "-c", '''cd {} && {}'''.format(workdir, command)],
+            command=["/bin/bash", "-c", f'{full_command}'],
             environment=environment,
+            url=url,
+            clone_dir=clone_dir,
+            commit_ref=commit_ref,
+            uws_root_dir=globals.UWS_ROOT_DIR,
+            job_output_dir=job_output_dir,
         ))
         log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(
@@ -101,17 +119,23 @@ def list_jobs(phase=None):
     }
     try:
         namespace = get_namespace()
-        # job_name = get_job_name_from_id
         api_response = api_batch_v1.list_namespaced_job(
             namespace=namespace, 
         )
         # Assume only one job is in the list
         for item in api_response.items:
+            envvars = []
+            for envvar in item.spec.template.spec.containers[0].env:
+                envvars.append({
+                    'name': envvar.name,
+                    'value': envvar.value,
+                })
             jobs.append({
                 'name': item.metadata.name,
                 'creation_time': item.metadata.creation_timestamp,
                 'job_id': item.metadata.labels['jobId'],
                 'command': item.spec.template.spec.containers[0].command,
+                'environment': envvars,
                 'status': {
                     'active': True if item.status.active else False,
                     'start_time': item.status.start_time,
@@ -134,6 +158,7 @@ def list_job(job_id):
         'creation_time': None,
         'job_id': job_id,
         'command': None,
+        'environment': None,
         'status': {
             'active': None,
             'start_time': None,
@@ -153,11 +178,18 @@ def list_job(job_id):
         )
         # Assume only one job is in the list
         for item in api_response.items:
+            envvars = []
+            for envvar in item.spec.template.spec.containers[0].env:
+                envvars.append({
+                    'name': envvar.name,
+                    'value': envvar.value,
+                })
             response = {
                 'name': item.metadata.name,
                 'creation_time': item.metadata.creation_timestamp,
                 'job_id': item.metadata.labels['jobId'],
                 'command': item.spec.template.spec.containers[0].command,
+                'environment': envvars,
                 'status': {
                     'active': True if item.status.active else False,
                     'start_time': item.status.start_time,

@@ -177,6 +177,7 @@ def construct_job_object(job_info):
             },
             'jobInfo': {
                 'command': job_info['command'],
+                'environment': job_info['environment'],
             },
         }
     except Exception as e:
@@ -189,7 +190,8 @@ class JobHandler(BaseHandler):
         try:
             command = self.getarg('command') # required 
             # environment is a list of objects like [{'name': 'env1', 'value': 'val1'}]
-            workdir = self.getarg('workdir', default='/scratch/uws') # optional
+            url = self.getarg('url', default=None) # optional
+            commit_ref = self.getarg('commit_ref', default=None) # optional
             environment = self.getarg('environment', default=[]) # optional
             replicas = self.getarg('replicas', default=1) # optional
         except:
@@ -197,7 +199,8 @@ class JobHandler(BaseHandler):
             return
         response = kubejob.create_job(
             command=command, 
-            workdir=workdir, 
+            url=url, 
+            commit_ref=commit_ref,
             replicas=replicas,
             environment=environment,
         )
