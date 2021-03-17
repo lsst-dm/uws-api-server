@@ -10,6 +10,7 @@ UWS API Server Documentation
     Development
     api/Readme
     ocps_prototype
+    client_demo
 
 Links
 ------------------------------
