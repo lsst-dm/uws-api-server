@@ -143,6 +143,8 @@ def construct_job_object(job_info):
             job_phase = 'queued'
             if job_info['status']['active']:
                 job_phase = 'executing'
+            if job_info['status']['failed']:
+                job_phase = 'error'
         if endTime:
             job_phase = 'completed'
             if not job_info['status']['succeeded'] or job_info['status']['failed']:
@@ -161,8 +163,8 @@ def construct_job_object(job_info):
             'executionDuration': executionDuration,
             'destruction': destructionTime,
             'parameters': {
-                'example_param_1': 1.0,
-                'example_param_2': 'two',
+                'command': job_info['command'],
+                'environment': job_info['environment'],
             },
             'results': [
                 {
@@ -176,8 +178,6 @@ def construct_job_object(job_info):
                 'message': message,
             },
             'jobInfo': {
-                'command': job_info['command'],
-                'environment': job_info['environment'],
             },
         }
     except Exception as e:
