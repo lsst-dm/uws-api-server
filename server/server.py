@@ -7,6 +7,7 @@ import json
 import os
 from datetime import datetime, timedelta
 import re
+import base64
 
 # Configure logging
 log = logging.getLogger("uws_api_server")
@@ -129,6 +130,18 @@ def construct_job_object(job_info):
             if not job_info['status']['succeeded'] or job_info['status']['failed']:
                 job_phase = 'error'
         
+        results = []
+        try:
+            for filepath in job_info['output_files']:
+                results.append({
+                    'id': str(base64.b64encode(bytes(filepath, 'utf-8')), 'utf-8'),
+                    'uri': filepath,
+                    # 'mime-type': 'image/fits',
+                    # 'size': '3000960',
+                })
+        except Exception as e:
+            log.error(str(e))
+            results = []
         # See job_schema.xml
         #   https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobobj
         job = {
@@ -145,14 +158,7 @@ def construct_job_object(job_info):
                 'command': job_info['command'],
                 'environment': job_info['environment'],
             },
-            'results': [
-                {
-                    'id': 0,
-                    'uri': 'http://myserver.org/uws/jobs/jobid123/result/image',
-                    'mime-type': 'image/fits',
-                    'size': '3000960',
-                },
-            ],
+            'results': results,
             'errorSummary': {
                 'message': message,
             },

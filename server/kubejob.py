@@ -52,6 +52,21 @@ def get_job_root_dir_from_id(job_id):
     return os.path.join(globals.UWS_ROOT_DIR, 'jobs', job_id)
 
 
+def list_job_output_files(job_id):
+    job_filepaths = []
+    try:
+        job_output_dir = os.path.join(get_job_root_dir_from_id(job_id), 'out')
+        if os.path.isdir(job_output_dir):
+            with os.scandir(job_output_dir) as dirscan:
+                for entry in dirscan:
+                    if not entry.name.startswith('.') and entry.is_file():
+                        job_filepaths.append(entry.path)
+                        log.debug(entry.path)
+    except Exception as e:
+        log.error(str(e))
+        raise e
+    return job_filepaths
+
 def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, environment=None):
     response = {
         'job_id': None,
@@ -147,13 +162,14 @@ def list_jobs(job_id=None):
                     'name': envvar.name,
                     'value': envvar.value,
                 })
-            jobs.append({
+            job = {
                 'name': item.metadata.name,
                 'creation_time': item.metadata.creation_timestamp,
                 'job_id': item.metadata.labels['jobId'],
                 'run_id': item.metadata.labels['runId'],
                 'command': item.spec.template.spec.containers[0].command,
                 'environment': envvars,
+                'output_files': list_job_output_files(job_id),
                 'status': {
                     'active': True if item.status.active else False,
                     'start_time': item.status.start_time,
@@ -161,7 +177,8 @@ def list_jobs(job_id=None):
                     'succeeded': True if item.status.succeeded else False,
                     'failed': True if item.status.failed else False,
                 },
-            })
+            }
+            jobs.append(job)
         response['jobs'] = jobs
     except Exception as e:
         msg = str(e)
