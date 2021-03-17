@@ -39,7 +39,6 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="UWS Client Demo" href="client_demo.html" />
     <link rel="prev" title="OCPS Job Manager API" href="api/Readme.html" /> 
 </head>
 
@@ -100,18 +99,14 @@
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#prototype">Prototype</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#job-type-specification">Job Type Specification</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#server-ocps-job-manager">Server - OCPS Job Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#server-ocps-job-manager">Server - OCPS Job Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#job-manager-api-specification">Job Manager API Specification</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#client-ocsp-csc">Client - OCSP CSC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#job-manager-api-specification">Job Manager API Specification</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#post-api-v1-job"><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/v1/job</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#get-api-v1-job-id-123"><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/v1/job?id=123</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#job-management">Job Management</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#initial-demonstration-of-job-awaiting-data-arrival">Initial demonstration of job awaiting data arrival</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="client_demo.html">UWS Client Demo</a></li>
 </ul>
 
             
@@ -189,183 +184,156 @@
 <p>The prototype OCPS Job Manager is designed as an evolving demonstration of the emerging system.</p>
 <p>The prototype consists of a server and a client.</p>
 <ul class="simple">
-<li><p>The server is a <a class="reference external" href="https://www.tornadoweb.org/en/stable/">Tornado-based webserver</a> written in Python, which runs on <a class="reference external" href="https://developer.lsst.io/services/lsst-devl.html">lsst-devl</a> in order to execute HTCondor commands that are only accessible on that cluster.</p></li>
-<li><p>The client represents the OCPS CSC that will ultimately be submitting jobs and fetching the results. The client is a Python script that could in principle be executed on any machine, but the <cite>lsst-devl</cite> firewall blocks access to the port on which the server listens; hence, the prototype client must also be run on <cite>lsst-devl</cite>.</p></li>
+<li><p>The server is a <a class="reference external" href="https://www.tornadoweb.org/en/stable/">Tornado-based webserver</a> written in Python, which runs on the NCSA Test Stand (NTS) Kubernetes cluster.</p></li>
+<li><p>The client represents the OCPS CSC that will ultimately be submitting jobs and fetching the results. The client is a Python script that could in principle be executed on any machine that can access the OCPS Job Manager HTTP port.</p></li>
 </ul>
-</div>
-<div class="section" id="job-type-specification">
-<h2>Job Type Specification<a class="headerlink" href="#job-type-specification" title="Permalink to this headline">¶</a></h2>
-<p>The available job types are defined in a <code class="docutils literal notranslate"><span class="pre">jobs/job_specs.yaml</span></code> file that looks like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">:</span>
-    <span class="c1"># Alert Production pipeline: https://pipelines.lsst.io/v/daily/modules/lsst.ap.pipe/index.html</span>
-    <span class="n">ap</span><span class="p">:</span>
-        <span class="c1"># The script to be executed by HTCondor</span>
-        <span class="n">script</span><span class="p">:</span> <span class="s2">&quot;jobs/ap_job.sh&quot;</span>
-        <span class="c1"># Environment variables required by the job script</span>
-        <span class="n">env</span><span class="p">:</span>
-            <span class="o">-</span> <span class="s2">&quot;AP_JOB_OUTPUT_DIR&quot;</span>
-            <span class="o">-</span> <span class="s2">&quot;AP_VISIT_ID&quot;</span>
-            <span class="o">-</span> <span class="s2">&quot;AP_CCD_NUM&quot;</span>
-            <span class="o">-</span> <span class="s2">&quot;AP_REPO&quot;</span>
-            <span class="o">-</span> <span class="s2">&quot;AP_TEMPLATE&quot;</span>
-            <span class="o">-</span> <span class="s2">&quot;AP_CALIB&quot;</span>
-            <span class="o">-</span> <span class="s2">&quot;AP_FILTER&quot;</span>
-    <span class="c1"># Additional job type definitions...</span>
-</pre></div>
-</div>
-<p>This example shows a definition for a job type <code class="docutils literal notranslate"><span class="pre">ap</span></code>. The <code class="docutils literal notranslate"><span class="pre">script</span></code> parameter (YAML scalar node) specifies the script that will be executed by HTCondor. The <code class="docutils literal notranslate"><span class="pre">env</span></code> declares the environment variables that must be specified when submitting a job.</p>
-<p>The script parameter will be revised to require specification of immutable code for reproducibility. For example, a git repo URL (from some controlled location) and specific git commit hash would suffice.</p>
 </div>
 <div class="section" id="server-ocps-job-manager">
 <h2>Server - OCPS Job Manager<a class="headerlink" href="#server-ocps-job-manager" title="Permalink to this headline">¶</a></h2>
-<p>Server configuration can be customized using environment variables:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">API_PORT</span>
-<span class="n">API_BASEPATH</span>
-<span class="n">API_DOMAIN</span>
-<span class="n">API_PROTOCOL</span>
-</pre></div>
+<p>The OCPS Job Manager is the <code class="docutils literal notranslate"><span class="pre">server/server.py</span></code> module, which implements a Universal Worker Service (UWS) API server to provide an asynchronous job management system that follows the <a class="reference external" href="https://www.ivoa.net/documents/UWS/">Universal Worker Service Pattern defined by the International Virtual Observatory Alliance</a>.</p>
+<div class="section" id="job-manager-api-specification">
+<h3>Job Manager API Specification<a class="headerlink" href="#job-manager-api-specification" title="Permalink to this headline">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the definition of the API spec, see <a class="reference internal" href="api/Readme.html"><span class="doc">OCPS Job Manager API</span></a>. <strong>This may not reflect the current prototype.</strong></p>
 </div>
-<p>Launch the API server, listening by default on port 8080:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">launch_job_manager</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
 </div>
 </div>
 <div class="section" id="client-ocsp-csc">
 <h2>Client - OCSP CSC<a class="headerlink" href="#client-ocsp-csc" title="Permalink to this headline">¶</a></h2>
-<p>As currently envisioned, the data (e.g. camera images) that form the input to the prompt processing jobs will be transferred from the OCS by an independent system; thus the input data is assumed to be accessible to the Job Manager as a Butler repo residing on some locally mounted storage.</p>
-<p>The prototype client parses a config file to get the information needed to demonstrate the Job Manager API.</p>
-<p>Construct the client config file <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> similar to this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cat</span> <span class="o">&gt;</span> <span class="n">config</span><span class="o">.</span><span class="n">yaml</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span>
+<p>As currently envisioned, the data (e.g. camera images) that form the input to the prompt processing jobs will be transferred from the OCS by an independent system; thus the input data is assumed to be accessible to the UWS as a Butler repo residing on some locally mounted storage.</p>
+<p>The prototype client (the <code class="docutils literal notranslate"><span class="pre">client/client.py</span></code> module) provides some wrapper functions around the API server endpoints, as well as a demo of some HTTP requests that create and manage jobs.</p>
+<p>See the <a class="reference internal" href="client_demo.html"><span class="doc">UWS Client Demo</span></a> for details.</p>
+</div>
+<div class="section" id="job-management">
+<h2>Job Management<a class="headerlink" href="#job-management" title="Permalink to this headline">¶</a></h2>
+<p>Jobs run as Kubernetes Jobs. The container image for each job is the <code class="docutils literal notranslate"><span class="pre">lsstsqre/centos:d_latest</span></code> Docker image.</p>
+<p>Create a job:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">job</span>
 
-<span class="n">data</span><span class="p">:</span>
-  <span class="n">repo</span><span class="p">:</span>     <span class="s2">&quot;/datasets/des_sn/repo_Y3/&quot;</span>
-  <span class="n">template</span><span class="p">:</span> <span class="s2">&quot;/datasets/des_sn/repo_Y3/templates/&quot;</span>
-  <span class="n">db</span><span class="p">:</span>       <span class="s2">&quot;/datasets/des_sn/repo_Y3/registry.sqlite3&quot;</span>
-  <span class="n">calib</span><span class="p">:</span>    <span class="s2">&quot;/datasets/des_sn/calib/&quot;</span>
-  <span class="nb">filter</span><span class="p">:</span>   <span class="s2">&quot;g&quot;</span>
-<span class="n">job</span><span class="p">:</span>
-  <span class="n">output_dir</span><span class="p">:</span> <span class="s1">&#39;./output&#39;</span>
-  <span class="n">log_dir</span><span class="p">:</span>    <span class="s1">&#39;./logs&#39;</span>
+<span class="n">Parameters</span><span class="p">:</span>
 
-<span class="n">EOF</span>
+  <span class="n">command</span> <span class="o">-</span> <span class="n">command</span> <span class="n">to</span> <span class="n">execute</span>
+  <span class="n">run_id</span> <span class="o">-</span> <span class="n">custom</span> <span class="n">identifier</span> <span class="k">for</span> <span class="n">client</span> <span class="n">use</span> <span class="n">only</span>
+  <span class="n">url</span> <span class="o">-</span> <span class="n">git</span> <span class="n">repo</span> <span class="n">URL</span> <span class="n">to</span> <span class="n">clone</span> <span class="k">for</span> <span class="n">use</span> <span class="n">by</span> <span class="n">job</span> <span class="n">script</span>
+  <span class="n">commit_ref</span> <span class="o">-</span> <span class="n">git</span> <span class="n">reference</span> <span class="p">(</span><span class="n">branch</span> <span class="n">name</span><span class="p">,</span> <span class="n">commit</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="n">denoting</span> <span class="n">the</span> <span class="n">desired</span> <span class="n">git</span> <span class="n">clone</span> <span class="n">state</span>
 </pre></div>
 </div>
-<p>The client demo will use the values to compose the HTTP request according to the Job Manager API Specification</p>
-<p>Run the client demo using the wrapper script <code class="docutils literal notranslate"><span class="pre">run_client.sh</span></code>, which configures the software environment using the LSST Software Stack.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">run_client</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="job-manager-api-specification">
-<h2>Job Manager API Specification<a class="headerlink" href="#job-manager-api-specification" title="Permalink to this headline">¶</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For the latest definition of the API spec, which may not yet be implemented, see <a class="reference internal" href="api/Readme.html"><span class="doc">OCPS Job Manager API</span></a>.</p>
-</div>
-<div class="section" id="post-api-v1-job">
-<h3><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/v1/job</span></code><a class="headerlink" href="#post-api-v1-job" title="Permalink to this headline">¶</a></h3>
-<p>Submit a job to the HTCondor queue for processing.</p>
-<p>Python example::</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s1">&#39;/api/v1/job&#39;</span><span class="p">,</span>
-    <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;ap&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s1">&#39;AP_JOB_OUTPUT_DIR&#39;</span><span class="p">:</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;job&#39;</span><span class="p">][</span><span class="s1">&#39;output_dir&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;AP_VISIT_ID&#39;</span><span class="p">:</span> <span class="n">image</span><span class="p">[</span><span class="s1">&#39;visit_id&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;AP_CCD_NUM&#39;</span><span class="p">:</span> <span class="n">image</span><span class="p">[</span><span class="s1">&#39;ccd&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;AP_REPO&#39;</span><span class="p">:</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;repo&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;AP_TEMPLATE&#39;</span><span class="p">:</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;template&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;AP_CALIB&#39;</span><span class="p">:</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;calib&#39;</span><span class="p">],</span>
-            <span class="s1">&#39;AP_FILTER&#39;</span><span class="p">:</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;filter&#39;</span><span class="p">],</span>
+<p>Get info about a specific job with ID <code class="docutils literal notranslate"><span class="pre">{jobId}</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">job</span><span class="o">/</span><span class="p">{</span><span class="n">jobId</span><span class="p">}</span>
+
+<span class="n">Response</span><span class="p">:</span>
+
+<span class="p">{</span>
+    <span class="s2">&quot;jobId&quot;</span><span class="p">:</span> <span class="s2">&quot;e13ed9f2803842409763b185d4f490e2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;runId&quot;</span><span class="p">:</span> <span class="s2">&quot;my-special-job&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ownerId&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="s2">&quot;executing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;creationTime&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-03-17 20:58:54+00:00&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;startTime&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-03-17 20:58:54+00:00&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;endTime&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;executionDuration&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;destruction&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+    <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;/bin/bash&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;-c&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cd /uws/jobs/e13ed9f2803842409763b185d4f490e2/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt&quot;</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;environment&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;DATA_DIR_COMCAM&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/lsstdata/comcam/oods/butler/repo&quot;</span>
         <span class="p">},</span>
-        <span class="s1">&#39;log_dir&#39;</span><span class="p">:</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;job&#39;</span><span class="p">][</span><span class="s1">&#39;log_dir&#39;</span><span class="p">],</span>
-    <span class="p">}</span>
-<span class="p">)</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;DATA_DIR_AUXTEL&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;/data/lsstdata/auxTel/oods/butler/repo&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;JOB_SOURCE_DIR&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/src&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;SRC_GIT_URL&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;https://github.com/lsst-dm/uws-api-server&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;GIT_COMMIT_REF&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">null</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;JOB_OUTPUT_DIR&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/out&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;results&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;errorSummary&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;jobInfo&quot;</span><span class="p">:</span> <span class="p">{}</span>
+  <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="get-api-v1-job-id-123">
-<h3><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/v1/job?id=123</span></code><a class="headerlink" href="#get-api-v1-job-id-123" title="Permalink to this headline">¶</a></h3>
-<p>Get information and status for an existing job.</p>
-</div>
-</div>
-<div class="section" id="initial-demonstration-of-job-awaiting-data-arrival">
-<h2>Initial demonstration of job awaiting data arrival<a class="headerlink" href="#initial-demonstration-of-job-awaiting-data-arrival" title="Permalink to this headline">¶</a></h2>
-<p>First launch the JobManager to listen for HTTP API requests:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/project/manninga/Prompt_Processing/OCPS_Job_Manager
-manninga@lsst-devl01$ /project/manninga/Prompt_Processing/OCPS_Job_Manager/launch_job_manager.sh
-2020-09-15 09:24:08,770      main   INFO  Running at localhost:8080/api/v1
+<p>List jobs that are executing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /api/v1/job?phase=executing
+
+Response:
+
+[
+  {
+    &quot;jobId&quot;: &quot;e13ed9f2803842409763b185d4f490e2&quot;,
+    &quot;runId&quot;: &quot;my-special-job&quot;,
+    &quot;ownerId&quot;: &quot;&quot;,
+    &quot;phase&quot;: &quot;executing&quot;,
+    &quot;creationTime&quot;: &quot;2021-03-17 20:58:54+00:00&quot;,
+    &quot;startTime&quot;: &quot;2021-03-17 20:58:54+00:00&quot;,
+    ...
+    additional details omitted for brevity
+    ...
+  },
+  {
+    &quot;jobId&quot;: &quot;a6b9043ef0c24170b019641da57a0dba&quot;,
+    &quot;runId&quot;: &quot;my-other-job&quot;,
+    &quot;ownerId&quot;: &quot;&quot;,
+    &quot;phase&quot;: &quot;executing&quot;,
+    &quot;creationTime&quot;: &quot;2021-03-17 15:58:54+00:00&quot;,
+    &quot;startTime&quot;: &quot;2021-03-17 16:58:54+00:00&quot;,
+    ...
+    additional details omitted for brevity
+    ...
+  }
+]
 </pre></div>
 </div>
-<p>Then run the client script, which spawns four jobs:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>manninga@lsst-devl01$ /project/manninga/Prompt_Processing/OCPS_Job_Manager/run_client.sh
-...
-POST /api/v1/job :
-{
-  &quot;status&quot;: &quot;ok&quot;,
-  &quot;msg&quot;: &quot;&quot;,
-  &quot;job_id&quot;: &quot;730f55f5cd6941e4ba047b06ed0e36dd&quot;,
-  &quot;cluster_id&quot;: null
-}
-...
-POST /api/v1/job :
-{
-  &quot;status&quot;: &quot;ok&quot;,
-  &quot;msg&quot;: &quot;&quot;,
-  &quot;job_id&quot;: &quot;c2c5484c22a8434aa301e4f56d17d595&quot;,
-  &quot;cluster_id&quot;: null
-}
-...
-POST /api/v1/job :
-{
-  &quot;status&quot;: &quot;ok&quot;,
-  &quot;msg&quot;: &quot;&quot;,
-  &quot;job_id&quot;: &quot;0f301a1cb6234c75b9b2f7d845348934&quot;,
-  &quot;cluster_id&quot;: null
-}
-...
-POST /api/v1/job :
-{
-  &quot;status&quot;: &quot;ok&quot;,
-  &quot;msg&quot;: &quot;&quot;,
-  &quot;job_id&quot;: &quot;1f5db30204244fd1aea18219ea8d2d37&quot;,
-  &quot;cluster_id&quot;: null
-}
+<p>Get the phase of job with ID <code class="docutils literal notranslate"><span class="pre">{jobId}</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">job</span><span class="o">/</span><span class="p">{</span><span class="n">jobId</span><span class="p">}</span><span class="o">/</span><span class="n">phase</span>
+
+<span class="n">Response</span><span class="p">:</span>
+
+<span class="s2">&quot;completed&quot;</span>
 </pre></div>
 </div>
-<p>The JobManager shows the four <code class="docutils literal notranslate"><span class="pre">/api/v1/job</span></code> request responses:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/project/manninga/Prompt_Processing/OCPS_Job_Manager
-manninga@lsst-devl01$ /project/manninga/Prompt_Processing/OCPS_Job_Manager/launch_job_manager.sh
-2020-09-15 09:24:08,770      main   INFO  Running at localhost:8080/api/v1
-2020-09-15 09:24:19,665  tornado.access   INFO  200 POST /api/v1/job (::1) 80.59ms
-2020-09-15 09:24:19,768  tornado.access   INFO  200 POST /api/v1/job (::1) 83.14ms
-2020-09-15 09:24:19,837  tornado.access   INFO  200 POST /api/v1/job (::1) 49.21ms
-2020-09-15 09:24:19,872  tornado.access   INFO  200 POST /api/v1/job (::1) 16.99ms
+<p>Job results are defined as the files generated during execution in the job output folder, whose path is available to the job script via an environment variable <code class="docutils literal notranslate"><span class="pre">$JOB_OUTPUT_DIR</span></code>. The UWS job object spec recommends an ID and a URI. Our URI is the path to the result file and the ID is the base64-encoded version of that path string, which is amenable to URLs and has the benefit of encoding the files universally unique path on disk (since the job UUID is part of the file path).</p>
+<p>Get the results of job with ID <code class="docutils literal notranslate"><span class="pre">{jobId}</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">job</span><span class="o">/</span><span class="p">{</span><span class="n">jobId</span><span class="p">}</span><span class="o">/</span><span class="n">results</span>
+
+<span class="n">Response</span><span class="p">:</span>
+
+<span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;/uws/jobs/</span><span class="si">{jobId}</span><span class="s2">/out/dirlist.txt&quot;</span>
+  <span class="p">}</span>
+<span class="p">]</span>
 </pre></div>
 </div>
-<p>In the background, JobManager has spawned four independent subprocesses that monitor the working directory for the presence of a “data” file named <code class="docutils literal notranslate"><span class="pre">[job_id].dat</span></code>, polling at a specified frequency (checking every 5 seconds in this case).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>manninga@lsst-devl01$ ps -u | grep -E &quot;(launch|monitor)&quot;
-manninga 3408357  0.0  0.0 113792  2060 pts/0    S+   09:24   0:00 /bin/bash /project/manninga/Prompt_Processing/OCPS_Job_Manager/launch_job_manager.sh
-manninga 3424510 16.0  0.0 147520 22912 pts/0    S+   10:57   0:00 python monitor.py --id 1f5db30204244fd1aea18219ea8d2d37 --type ap --api_url http://localhost:8080/api/v1/monitor/complete
-manninga 3424511 16.5  0.0 147520 22900 pts/0    S+   10:57   0:00 python monitor.py --id c2c5484c22a8434aa301e4f56d17d595 --type ap --api_url http://localhost:8080/api/v1/monitor/complete
-manninga 3424512 16.5  0.0 147520 22912 pts/0    S+   10:57   0:00 python monitor.py --id 0f301a1cb6234c75b9b2f7d845348934 --type ap --api_url http://localhost:8080/api/v1/monitor/complete
-manninga 3424513 15.5  0.0 147520 23076 pts/0    S+   10:57   0:00 python monitor.py --id 730f55f5cd6941e4ba047b06ed0e36dd --type ap --api_url http://localhost:8080/api/v1/monitor/complete
-</pre></div>
-</div>
-<p>When the “data” file associated with a job is created (manually in this case),</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>manninga@lsst-devl01$ touch /project/manninga/Prompt_Processing/OCPS_Job_Manager/server/0f301a1cb6234c75b9b2f7d845348934.dat
-</pre></div>
-</div>
-<p>the relevant subprocess for that job notices the “data” arrival and triggers the launch of the HTCondor job initialization by requesting the internal API endpoint <code class="docutils literal notranslate"><span class="pre">/api/v1/monitor/complete?id=[secret_key]</span></code> (in this initial demo, the key is the <code class="docutils literal notranslate"><span class="pre">job_id</span></code> for simplicity):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Data file &quot;0f301a1cb6234c75b9b2f7d845348934.dat&quot; found. Making API request...
-2020-09-15 09:25:10,318  tornado.access   INFO  200 GET /api/v1/monitor/complete?id=0f301a1cb6234c75b9b2f7d845348934 (::1) 2.06ms
-2020-09-15 09:25:10,317      main   INFO  Data arrived for job &quot;0f301a1cb6234c75b9b2f7d845348934&quot;. Launching job...
-</pre></div>
-</div>
-<p>After creating three of the four “data” files being monitored, there is still one subprocess running:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>manninga@lsst-devl01$ ps -u | grep monitor
-manninga 3409230  0.3  0.0 147520 22912 pts/0    S+   09:24   0:00 python monitor.py --id 730f55f5cd6941e4ba047b06ed0e36dd --type ap --api_url http://localhost:8080/api/v1/monitor/complete
+<p>Download a job result file from job with result ID <code class="docutils literal notranslate"><span class="pre">{resultId}</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">job</span><span class="o">/</span><span class="n">result</span><span class="o">/</span><span class="p">{</span><span class="n">resultId</span><span class="p">}</span>
+
+<span class="n">Response</span><span class="p">:</span>
+
+<span class="p">(</span><span class="n">requested</span> <span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -377,7 +345,6 @@ manninga 3409230  0.3  0.0 147520 22912 pts/0    S+   09:24   0:00 python monito
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="client_demo.html" class="btn btn-neutral float-right" title="UWS Client Demo" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="api/Readme.html" class="btn btn-neutral float-left" title="OCPS Job Manager API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
