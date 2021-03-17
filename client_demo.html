@@ -38,7 +38,8 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Rubin OCS Controlled Pipeline System (OCPS) prototype" href="ocps_prototype.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -84,7 +85,7 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Development.html">Development</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Development.html#documentation-system">Documentation system</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="Development.html#sphinx">Sphinx</a></li>
@@ -109,6 +110,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#initial-demonstration-of-job-awaiting-data-arrival">Initial demonstration of job awaiting data arrival</a></li>
 </ul>
 </li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">UWS Client Demo</a></li>
 </ul>
 
             
@@ -181,263 +183,211 @@
   <div class="section" id="uws-client-demo">
 <h1>UWS Client Demo<a class="headerlink" href="#uws-client-demo" title="Permalink to this headline">¶</a></h1>
 <p>The following is a demonstration of basic job creation and management. The client is a Python script running the following code:</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
-print(‘List all jobs:’)
-list_jobs()
-print(‘Create a job:’)
-create_response = create_job(command=’ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt’, git_url=’<a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a>’, run_id=’my-special-job’)
-job_id = create_response.json()[‘job_id’]
-print(‘List jobs that are executing:’)
-list_jobs(phase=’executing’)
-print(‘Get the results for the job just created:’)
-job_phase = get_job(job_id, property=’phase’).json()
-while job_phase in [‘pending’, ‘queued’, ‘executing’]:</p>
-<blockquote>
-<div><p>print(f’Job {job_id} phase is {job_phase}. Waiting to complete…’)
-time.sleep(3)
-job_phase = get_job(job_id, property=’phase’).json()</p>
-</div></blockquote>
-<p>print(f’Job phase is {job_phase}.’)
-if job_phase == ‘completed’:</p>
-<blockquote>
-<div><p>print(‘Fetching results…’)
-results = get_job(job_id, property=’results’).json()
-for result in results:</p>
-<blockquote>
-<div><p>downloaded_file = get_result(result_id=result[‘id’])
-if downloaded_file:</p>
-<blockquote>
-<div><p>print(f’Contents of result file “{downloaded_file}”:’)
-with open(downloaded_file, ‘r’) as dfile:</p>
-<blockquote>
-<div><p>print(dfile.read())</p>
-</div></blockquote>
-</div></blockquote>
-</div></blockquote>
-</div></blockquote>
-<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;List all jobs:&#39;</span><span class="p">)</span>
+<span class="n">list_jobs</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Create a job:&#39;</span><span class="p">)</span>
+<span class="n">create_response</span> <span class="o">=</span> <span class="n">create_job</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="s1">&#39;ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt&#39;</span><span class="p">,</span> <span class="n">git_url</span><span class="o">=</span><span class="s1">&#39;https://github.com/lsst-dm/uws-api-server&#39;</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="s1">&#39;my-special-job&#39;</span><span class="p">)</span>
+<span class="n">job_id</span> <span class="o">=</span> <span class="n">create_response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;job_id&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;List jobs that are executing:&#39;</span><span class="p">)</span>
+<span class="n">list_jobs</span><span class="p">(</span><span class="n">phase</span><span class="o">=</span><span class="s1">&#39;executing&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Get the results for the job just created:&#39;</span><span class="p">)</span>
+<span class="n">job_phase</span> <span class="o">=</span> <span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;phase&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="k">while</span> <span class="n">job_phase</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pending&#39;</span><span class="p">,</span> <span class="s1">&#39;queued&#39;</span><span class="p">,</span> <span class="s1">&#39;executing&#39;</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Job </span><span class="si">{job_id}</span><span class="s1"> phase is </span><span class="si">{job_phase}</span><span class="s1">. Waiting to complete...&#39;</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">job_phase</span> <span class="o">=</span> <span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;phase&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Job phase is </span><span class="si">{job_phase}</span><span class="s1">.&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">job_phase</span> <span class="o">==</span> <span class="s1">&#39;completed&#39;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fetching results...&#39;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;results&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="n">downloaded_file</span> <span class="o">=</span> <span class="n">get_result</span><span class="p">(</span><span class="n">result_id</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">downloaded_file</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Contents of result file &quot;</span><span class="si">{downloaded_file}</span><span class="s1">&quot;:&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">downloaded_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dfile</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">dfile</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+</div>
 <p>The output of this script is the following:</p>
-<p><a href="#id7"><span class="problematic" id="id8">``</span></a>`
-<a class="reference external" href="mailto:worker&#37;&#52;&#48;uws-api-client-67dd546754-xqbdn">worker<span>&#64;</span>uws-api-client-67dd546754-xqbdn</a>:~/client$ python3 client.py</p>
-<p>List all jobs:
-GET <a class="reference external" href="http://uws-api-server:80/api/v1/job">http://uws-api-server:80/api/v1/job</a> :
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>worker@uws-api-client-67dd546754-xqbdn:~/client$ python3 client.py 
+
+List all jobs:
+GET http://uws-api-server:80/api/v1/job :
 HTTP code: 200
-[</p>
-<blockquote>
-<div><dl>
-<dt>{</dt><dd><p>“jobId”: “a6b9043ef0c24170b019641da57a0dba”,
-“runId”: “my-special-job”,
-“ownerId”: “”,
-“phase”: “completed”,
-“creationTime”: “2021-03-17 20:58:00+00:00”,
-“startTime”: “2021-03-17 20:58:00+00:00”,
-“endTime”: “2021-03-17 20:58:13+00:00”,
-“executionDuration”: 13.0,
-“destruction”: null,
-“parameters”: {</p>
-<blockquote>
-<div><dl class="simple">
-<dt>“command”: [</dt><dd><p>“/bin/bash”,
-“-c”,
-“cd /uws/jobs/a6b9043ef0c24170b019641da57a0dba/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt”</p>
-</dd>
-</dl>
-<p>],
-“environment”: [</p>
-<blockquote>
-<div><dl class="simple">
-<dt>{</dt><dd><p>“name”: “DATA_DIR_COMCAM”,
-“value”: “/data/lsstdata/comcam/oods/butler/repo”</p>
-</dd>
-</dl>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “DATA_DIR_AUXTEL”,
-“value”: “/data/lsstdata/auxTel/oods/butler/repo”</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “JOB_SOURCE_DIR”,
-“value”: “/uws/jobs/a6b9043ef0c24170b019641da57a0dba/src”</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “SRC_GIT_URL”,
-“value”: “<a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a>”</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “GIT_COMMIT_REF”,
-“value”: null</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “JOB_OUTPUT_DIR”,
-“value”: “/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out”</p>
-</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<p>]</p>
-</div></blockquote>
-<p>},
-“results”: [</p>
-<blockquote>
-<div><dl class="simple">
-<dt>{</dt><dd><p>“id”: “L3V3cy9qb2JzL2E2YjkwNDNlZjBjMjQxNzBiMDE5NjQxZGE1N2EwZGJhL291dC9kaXJsaXN0LnR4dA==”,
-“uri”: “/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out/dirlist.txt”</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
-<p>],
-“errorSummary”: {</p>
-<blockquote>
-<div><p>“message”: “”</p>
-</div></blockquote>
-<p>},
-“jobInfo”: {}</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
-<p>]</p>
-<p>Create a job:
-PUT <a class="reference external" href="http://uws-api-server:80/api/v1/job">http://uws-api-server:80/api/v1/job</a> :
+[
+  {
+    &quot;jobId&quot;: &quot;a6b9043ef0c24170b019641da57a0dba&quot;,
+    &quot;runId&quot;: &quot;my-special-job&quot;,
+    &quot;ownerId&quot;: &quot;&quot;,
+    &quot;phase&quot;: &quot;completed&quot;,
+    &quot;creationTime&quot;: &quot;2021-03-17 20:58:00+00:00&quot;,
+    &quot;startTime&quot;: &quot;2021-03-17 20:58:00+00:00&quot;,
+    &quot;endTime&quot;: &quot;2021-03-17 20:58:13+00:00&quot;,
+    &quot;executionDuration&quot;: 13.0,
+    &quot;destruction&quot;: null,
+    &quot;parameters&quot;: {
+      &quot;command&quot;: [
+        &quot;/bin/bash&quot;,
+        &quot;-c&quot;,
+        &quot;cd /uws/jobs/a6b9043ef0c24170b019641da57a0dba/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt&quot;
+      ],
+      &quot;environment&quot;: [
+        {
+          &quot;name&quot;: &quot;DATA_DIR_COMCAM&quot;,
+          &quot;value&quot;: &quot;/data/lsstdata/comcam/oods/butler/repo&quot;
+        },
+        {
+          &quot;name&quot;: &quot;DATA_DIR_AUXTEL&quot;,
+          &quot;value&quot;: &quot;/data/lsstdata/auxTel/oods/butler/repo&quot;
+        },
+        {
+          &quot;name&quot;: &quot;JOB_SOURCE_DIR&quot;,
+          &quot;value&quot;: &quot;/uws/jobs/a6b9043ef0c24170b019641da57a0dba/src&quot;
+        },
+        {
+          &quot;name&quot;: &quot;SRC_GIT_URL&quot;,
+          &quot;value&quot;: &quot;https://github.com/lsst-dm/uws-api-server&quot;
+        },
+        {
+          &quot;name&quot;: &quot;GIT_COMMIT_REF&quot;,
+          &quot;value&quot;: null
+        },
+        {
+          &quot;name&quot;: &quot;JOB_OUTPUT_DIR&quot;,
+          &quot;value&quot;: &quot;/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out&quot;
+        }
+      ]
+    },
+    &quot;results&quot;: [
+      {
+        &quot;id&quot;: &quot;L3V3cy9qb2JzL2E2YjkwNDNlZjBjMjQxNzBiMDE5NjQxZGE1N2EwZGJhL291dC9kaXJsaXN0LnR4dA==&quot;,
+        &quot;uri&quot;: &quot;/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out/dirlist.txt&quot;
+      }
+    ],
+    &quot;errorSummary&quot;: {
+      &quot;message&quot;: &quot;&quot;
+    },
+    &quot;jobInfo&quot;: {}
+  }
+]
+
+
+Create a job:
+PUT http://uws-api-server:80/api/v1/job :
 HTTP code: 200
-{</p>
-<blockquote>
-<div><p>“job_id”: “e13ed9f2803842409763b185d4f490e2”,
-“api_response”: null,
-“message”: null,
-“status”: “ok”</p>
-</div></blockquote>
-<p>}</p>
-<p>List jobs that are executing:
-GET <a class="reference external" href="http://uws-api-server:80/api/v1/job?phase=executing">http://uws-api-server:80/api/v1/job?phase=executing</a> :
+{
+  &quot;job_id&quot;: &quot;e13ed9f2803842409763b185d4f490e2&quot;,
+  &quot;api_response&quot;: null,
+  &quot;message&quot;: null,
+  &quot;status&quot;: &quot;ok&quot;
+}
+
+
+List jobs that are executing:
+GET http://uws-api-server:80/api/v1/job?phase=executing :
 HTTP code: 200
-[</p>
-<blockquote>
-<div><dl>
-<dt>{</dt><dd><p>“jobId”: “e13ed9f2803842409763b185d4f490e2”,
-“runId”: “my-special-job”,
-“ownerId”: “”,
-“phase”: “executing”,
-“creationTime”: “2021-03-17 20:58:54+00:00”,
-“startTime”: “2021-03-17 20:58:54+00:00”,
-“endTime”: null,
-“executionDuration”: null,
-“destruction”: null,
-“parameters”: {</p>
-<blockquote>
-<div><dl class="simple">
-<dt>“command”: [</dt><dd><p>“/bin/bash”,
-“-c”,
-“cd /uws/jobs/e13ed9f2803842409763b185d4f490e2/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt”</p>
-</dd>
-</dl>
-<p>],
-“environment”: [</p>
-<blockquote>
-<div><dl class="simple">
-<dt>{</dt><dd><p>“name”: “DATA_DIR_COMCAM”,
-“value”: “/data/lsstdata/comcam/oods/butler/repo”</p>
-</dd>
-</dl>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “DATA_DIR_AUXTEL”,
-“value”: “/data/lsstdata/auxTel/oods/butler/repo”</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “JOB_SOURCE_DIR”,
-“value”: “/uws/jobs/e13ed9f2803842409763b185d4f490e2/src”</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “SRC_GIT_URL”,
-“value”: “<a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a>”</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “GIT_COMMIT_REF”,
-“value”: null</p>
-</div></blockquote>
-<p>},
-{</p>
-<blockquote>
-<div><p>“name”: “JOB_OUTPUT_DIR”,
-“value”: “/uws/jobs/e13ed9f2803842409763b185d4f490e2/out”</p>
-</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<p>]</p>
-</div></blockquote>
-<p>},
-“results”: [],
-“errorSummary”: {</p>
-<blockquote>
-<div><p>“message”: “”</p>
-</div></blockquote>
-<p>},
-“jobInfo”: {}</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
-<p>]</p>
-<p>Get the results for the job just created:
+[
+  {
+    &quot;jobId&quot;: &quot;e13ed9f2803842409763b185d4f490e2&quot;,
+    &quot;runId&quot;: &quot;my-special-job&quot;,
+    &quot;ownerId&quot;: &quot;&quot;,
+    &quot;phase&quot;: &quot;executing&quot;,
+    &quot;creationTime&quot;: &quot;2021-03-17 20:58:54+00:00&quot;,
+    &quot;startTime&quot;: &quot;2021-03-17 20:58:54+00:00&quot;,
+    &quot;endTime&quot;: null,
+    &quot;executionDuration&quot;: null,
+    &quot;destruction&quot;: null,
+    &quot;parameters&quot;: {
+      &quot;command&quot;: [
+        &quot;/bin/bash&quot;,
+        &quot;-c&quot;,
+        &quot;cd /uws/jobs/e13ed9f2803842409763b185d4f490e2/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt&quot;
+      ],
+      &quot;environment&quot;: [
+        {
+          &quot;name&quot;: &quot;DATA_DIR_COMCAM&quot;,
+          &quot;value&quot;: &quot;/data/lsstdata/comcam/oods/butler/repo&quot;
+        },
+        {
+          &quot;name&quot;: &quot;DATA_DIR_AUXTEL&quot;,
+          &quot;value&quot;: &quot;/data/lsstdata/auxTel/oods/butler/repo&quot;
+        },
+        {
+          &quot;name&quot;: &quot;JOB_SOURCE_DIR&quot;,
+          &quot;value&quot;: &quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/src&quot;
+        },
+        {
+          &quot;name&quot;: &quot;SRC_GIT_URL&quot;,
+          &quot;value&quot;: &quot;https://github.com/lsst-dm/uws-api-server&quot;
+        },
+        {
+          &quot;name&quot;: &quot;GIT_COMMIT_REF&quot;,
+          &quot;value&quot;: null
+        },
+        {
+          &quot;name&quot;: &quot;JOB_OUTPUT_DIR&quot;,
+          &quot;value&quot;: &quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/out&quot;
+        }
+      ]
+    },
+    &quot;results&quot;: [],
+    &quot;errorSummary&quot;: {
+      &quot;message&quot;: &quot;&quot;
+    },
+    &quot;jobInfo&quot;: {}
+  }
+]
+
+
+Get the results for the job just created:
 GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
 HTTP code: 200
-“executing”</p>
-<p>…</p>
-<p>Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete…
+&quot;executing&quot;
+
+...
+
+
+Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete...
 GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
 HTTP code: 200
-“executing”</p>
-<p>Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete…
+&quot;executing&quot;
+
+
+Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete...
 GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
 HTTP code: 200
-“completed”</p>
-<p>Job phase is completed.
-Fetching results…
+&quot;completed&quot;
+
+
+Job phase is completed.
+Fetching results...
 GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/results :
 HTTP code: 200
-[</p>
-<blockquote>
-<div><dl class="simple">
-<dt>{</dt><dd><p>“id”: “L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==”,
-“uri”: “/uws/jobs/e13ed9f2803842409763b185d4f490e2/out/dirlist.txt”</p>
-</dd>
-</dl>
-<p>}</p>
-</div></blockquote>
-<p>]</p>
-<p>Download result file to “./L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==”.
-Contents of result file “L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==”:
+[
+  {
+    &quot;id&quot;: &quot;L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==&quot;,
+    &quot;uri&quot;: &quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/out/dirlist.txt&quot;
+  }
+]
+
+
+Download result file to &quot;./L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==&quot;.
+Contents of result file &quot;L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==&quot;:
 total 36
--rw-r–r– 1 lsst lsst  653 Mar 17 20:59 Dockerfile
--rw-r–r– 1 lsst lsst  436 Mar 17 20:59 Readme.rst
+-rw-r--r-- 1 lsst lsst  653 Mar 17 20:59 Dockerfile
+-rw-r--r-- 1 lsst lsst  436 Mar 17 20:59 Readme.rst
 drwxr-xr-x 2 lsst lsst   98 Mar 17 20:59 client
 drwxr-xr-x 4 lsst lsst  273 Mar 17 20:59 docs
--rw-r–r– 1 lsst lsst  399 Mar 17 20:59 envvars.py
--rw-r–r– 1 lsst lsst 1186 Mar 17 20:59 globals.py
+-rw-r--r-- 1 lsst lsst  399 Mar 17 20:59 envvars.py
+-rw-r--r-- 1 lsst lsst 1186 Mar 17 20:59 globals.py
 -rwxr-xr-x 1 lsst lsst 1096 Mar 17 20:59 k8s_sync_client.sh
 -rwxr-xr-x 1 lsst lsst 1096 Mar 17 20:59 k8s_sync_server.sh
 -rwxr-xr-x 1 lsst lsst  383 Mar 17 20:59 launch_job_manager.sh
--rw-r–r– 1 lsst lsst  142 Mar 17 20:59 requirements.txt
+-rw-r--r-- 1 lsst lsst  142 Mar 17 20:59 requirements.txt
 -rwxr-xr-x 1 lsst lsst  449 Mar 17 20:59 run_client.sh
-drwxr-xr-x 3 lsst lsst  212 Mar 17 20:59 server</p>
-<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
+drwxr-xr-x 3 lsst lsst  212 Mar 17 20:59 server
+</pre></div>
+</div>
 </div>
 
 
@@ -445,6 +395,9 @@ drwxr-xr-x 3 lsst lsst  212 Mar 17 20:59 server</p>
            
           </div>
           <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="ocps_prototype.html" class="btn btn-neutral float-left" title="Rubin OCS Controlled Pipeline System (OCPS) prototype" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
 
   <hr/>
 
