@@ -8,6 +8,7 @@ import os
 from datetime import datetime, timedelta
 import re
 import base64
+from mimetypes import guess_type
 
 # Configure logging
 log = logging.getLogger("uws_api_server")
@@ -170,6 +171,46 @@ def construct_job_object(job_info):
     return job
 
 
+class ResultFileHandler(BaseHandler):
+    def get(self, result_id=None):
+        try:
+            # # If a job_id is provided but it is invalid, then the request is malformed:
+            # if not valid_job_id(job_id):
+            #     self.send_response('Invalid job ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+            #     self.finish()
+            #     return
+            # If a result_id is not provided, then the request is malformed:
+            if not result_id:
+                self.send_response('Invalid result ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+                self.finish()
+                return
+            try:
+                file_path = str(base64.b64decode(bytes(result_id, 'utf-8')), 'utf-8')
+            except:
+                self.send_response('Result file not found.', http_status_code=globals.HTTP_NOT_FOUND, return_json=False)
+                self.finish()
+                return
+            if not os.path.isfile(file_path):
+                self.send_response('Result file not found.', http_status_code=globals.HTTP_NOT_FOUND, return_json=False)
+                self.finish()
+                return
+            content_type, _ = guess_type(file_path)
+            if not content_type:
+                content_type = "application/octet-stream"
+            self.add_header('Content-Type', content_type)
+            with open(file_path) as source_file:
+                self.send_response(source_file.read(), return_json=False)
+                self.finish()
+                return
+            
+        except Exception as e:
+            response = str(e).strip()
+            log.error(response)
+            self.send_response(response, http_status_code=globals.HTTP_SERVER_ERROR, indent=2)
+            self.finish()
+            return
+
+
 class JobHandler(BaseHandler):
     def put(self):
         try:
@@ -319,6 +360,9 @@ def make_app(base_path=''):
         [
             # TODO: Move the job list handler into the /job endpoint to better implement the UWS pattern spec
             # See https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobList
+            # (r"{}/job/(.*)/results/(.*)".format(base_path), ResultFileHandler),
+            # (r"{}/job/(.*)/results/(.*)".format(base_path), tornado.web.RedirectHandler, {"url": "{}/job/results/{0}/{1}".format(base_path)}),
+            (r"{}/job/result/(.*)".format(base_path), ResultFileHandler),
             (r"{}/job/(.*)/(.*)".format(base_path), JobHandler),
             (r"{}/job/(.*)".format(base_path), JobHandler),
             (r"{}/job".format(base_path), JobHandler),

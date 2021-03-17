@@ -169,7 +169,7 @@ def list_jobs(job_id=None):
                 'run_id': item.metadata.labels['runId'],
                 'command': item.spec.template.spec.containers[0].command,
                 'environment': envvars,
-                'output_files': list_job_output_files(job_id),
+                'output_files': list_job_output_files(item.metadata.labels['jobId']),
                 'status': {
                     'active': True if item.status.active else False,
                     'start_time': item.status.start_time,
