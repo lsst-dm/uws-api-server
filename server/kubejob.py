@@ -3,6 +3,7 @@ import logging
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 import os
+import shutil
 import yaml
 from jinja2 import Template
 import uuid
@@ -47,6 +48,10 @@ def get_job_name_from_id(job_id):
     return 'uws-job-{}'.format(job_id)
 
 
+def get_job_root_dir_from_id(job_id):
+    return os.path.join(globals.UWS_ROOT_DIR, 'jobs', job_id)
+
+
 def create_job(command, url=None, commit_ref=None, replicas=1, environment=None):
     response = {
         'job_id': None,
@@ -58,7 +63,7 @@ def create_job(command, url=None, commit_ref=None, replicas=1, environment=None)
         namespace = get_namespace()
         job_id = generate_uuid()
         job_name = get_job_name_from_id(job_id)
-        job_root_dir = os.path.join(globals.UWS_ROOT_DIR, 'jobs', job_id)
+        job_root_dir = get_job_root_dir_from_id(job_id)
         job_output_dir = os.path.join(job_root_dir, 'out')
         if isinstance(url, str):
             # stripped_url = f'{url}'.strip('/').strip('.git').strip('/').strip()
@@ -76,16 +81,20 @@ def create_job(command, url=None, commit_ref=None, replicas=1, environment=None)
             name=job_name,
             jobId=job_id,
             namespace=namespace,
-            backoffLimit=2,
+            backoffLimit=0,
             replicas=replicas,
             container_name='uws-job',
             # TODO: Allow some flexibility in the Docker container image name and/or tag.
+            # CAUTION: Discrepancy between the UID of the image user and the UWS API server UID
+            #          will create permissions problems. For example, if the job UID is 1001 and
+            #          the server UID is 1000, then files created by the job will not in general 
+            #          allow the server to delete them when cleaning up deleted jobs.
             image='lsstsqre/centos:d_latest',
             command=["/bin/bash", "-c", f'{full_command}'],
             environment=environment,
-            url=url,
-            clone_dir=clone_dir,
-            commit_ref=commit_ref,
+            url=url if url else '',
+            clone_dir=clone_dir if clone_dir else '',
+            commit_ref=commit_ref if commit_ref else '',
             uws_root_dir=globals.UWS_ROOT_DIR,
             job_output_dir=job_output_dir,
         ))
@@ -221,19 +230,29 @@ def delete_job(job_id):
             name=job_name,
         )
         response['status']  = api_response.status if api_response.status else response['status']
-        response['message'] = api_response.status if api_response.message else response['message']
-        response['code']    = api_response.status if api_response.code else response['code']
-        response['message'] = api_response.status if api_response.message else response['message']
+        response['message'] = api_response.message if api_response.message else response['message']
+        response['code']    = api_response.code if api_response.code else response['code']
     except ApiException as e:
         msg = str(e)
         response['message'] = msg 
         if msg.startswith('(404)'):
-            response['code'] = 404
+            response['code'] = globals.HTTP_NOT_FOUND
         else:
             response['status'] = globals.STATUS_ERROR
     except Exception as e:
         msg = str(e)
         log.error(msg)
         response['status'] = globals.STATUS_ERROR
-        response['message'] = msg
+        response['message'] += f'\n\n{msg}'
+    try:
+        # Delete the job files if they exist
+        job_root_dir = get_job_root_dir_from_id(job_id)
+        if os.path.isdir(job_root_dir):
+            log.debug(f'Deleting job files "{job_root_dir}"')
+            shutil.rmtree(job_root_dir)
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+        response['status'] = globals.STATUS_ERROR
+        response['message'] += f'\n\n{msg}'
     return response
