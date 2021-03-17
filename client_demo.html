@@ -1,0 +1,487 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>UWS Client Demo &mdash; UWS API Server  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> UWS API Server
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Development.html">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#documentation-system">Documentation system</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Development.html#sphinx">Sphinx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Development.html#github-actions-and-pages">GitHub Actions and Pages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#file-editors-and-viewers">File editors and viewers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#development-environment">Development environment</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ocps_prototype.html">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#prototype">Prototype</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#job-type-specification">Job Type Specification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#server-ocps-job-manager">Server - OCPS Job Manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#client-ocsp-csc">Client - OCSP CSC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#job-manager-api-specification">Job Manager API Specification</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ocps_prototype.html#post-api-v1-job"><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/api/v1/job</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ocps_prototype.html#get-api-v1-job-id-123"><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/v1/job?id=123</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#initial-demonstration-of-job-awaiting-data-arrival">Initial demonstration of job awaiting data arrival</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">UWS API Server</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>UWS Client Demo</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/lsst-dm/uws-api-server/blob/master/docs/client_demo.md" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="uws-client-demo">
+<h1>UWS Client Demo<a class="headerlink" href="#uws-client-demo" title="Permalink to this headline">¶</a></h1>
+<p>The following is a demonstration of basic job creation and management. The client is a Python script running the following code:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a>`
+print(‘List all jobs:’)
+list_jobs()
+print(‘Create a job:’)
+create_response = create_job(command=’ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt’, git_url=’<a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a>’, run_id=’my-special-job’)
+job_id = create_response.json()[‘job_id’]
+print(‘List jobs that are executing:’)
+list_jobs(phase=’executing’)
+print(‘Get the results for the job just created:’)
+job_phase = get_job(job_id, property=’phase’).json()
+while job_phase in [‘pending’, ‘queued’, ‘executing’]:</p>
+<blockquote>
+<div><p>print(f’Job {job_id} phase is {job_phase}. Waiting to complete…’)
+time.sleep(3)
+job_phase = get_job(job_id, property=’phase’).json()</p>
+</div></blockquote>
+<p>print(f’Job phase is {job_phase}.’)
+if job_phase == ‘completed’:</p>
+<blockquote>
+<div><p>print(‘Fetching results…’)
+results = get_job(job_id, property=’results’).json()
+for result in results:</p>
+<blockquote>
+<div><p>downloaded_file = get_result(result_id=result[‘id’])
+if downloaded_file:</p>
+<blockquote>
+<div><p>print(f’Contents of result file “{downloaded_file}”:’)
+with open(downloaded_file, ‘r’) as dfile:</p>
+<blockquote>
+<div><p>print(dfile.read())</p>
+</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+</div></blockquote>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<p>The output of this script is the following:</p>
+<p><a href="#id7"><span class="problematic" id="id8">``</span></a>`
+<a class="reference external" href="mailto:worker&#37;&#52;&#48;uws-api-client-67dd546754-xqbdn">worker<span>&#64;</span>uws-api-client-67dd546754-xqbdn</a>:~/client$ python3 client.py</p>
+<p>List all jobs:
+GET <a class="reference external" href="http://uws-api-server:80/api/v1/job">http://uws-api-server:80/api/v1/job</a> :
+HTTP code: 200
+[</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“jobId”: “a6b9043ef0c24170b019641da57a0dba”,
+“runId”: “my-special-job”,
+“ownerId”: “”,
+“phase”: “completed”,
+“creationTime”: “2021-03-17 20:58:00+00:00”,
+“startTime”: “2021-03-17 20:58:00+00:00”,
+“endTime”: “2021-03-17 20:58:13+00:00”,
+“executionDuration”: 13.0,
+“destruction”: null,
+“parameters”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“command”: [</dt><dd><p>“/bin/bash”,
+“-c”,
+“cd /uws/jobs/a6b9043ef0c24170b019641da57a0dba/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt”</p>
+</dd>
+</dl>
+<p>],
+“environment”: [</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>“name”: “DATA_DIR_COMCAM”,
+“value”: “/data/lsstdata/comcam/oods/butler/repo”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “DATA_DIR_AUXTEL”,
+“value”: “/data/lsstdata/auxTel/oods/butler/repo”</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “JOB_SOURCE_DIR”,
+“value”: “/uws/jobs/a6b9043ef0c24170b019641da57a0dba/src”</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “SRC_GIT_URL”,
+“value”: “<a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a>”</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “GIT_COMMIT_REF”,
+“value”: null</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “JOB_OUTPUT_DIR”,
+“value”: “/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+“results”: [</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>“id”: “L3V3cy9qb2JzL2E2YjkwNDNlZjBjMjQxNzBiMDE5NjQxZGE1N2EwZGJhL291dC9kaXJsaXN0LnR4dA==”,
+“uri”: “/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out/dirlist.txt”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>],
+“errorSummary”: {</p>
+<blockquote>
+<div><p>“message”: “”</p>
+</div></blockquote>
+<p>},
+“jobInfo”: {}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>]</p>
+<p>Create a job:
+PUT <a class="reference external" href="http://uws-api-server:80/api/v1/job">http://uws-api-server:80/api/v1/job</a> :
+HTTP code: 200
+{</p>
+<blockquote>
+<div><p>“job_id”: “e13ed9f2803842409763b185d4f490e2”,
+“api_response”: null,
+“message”: null,
+“status”: “ok”</p>
+</div></blockquote>
+<p>}</p>
+<p>List jobs that are executing:
+GET <a class="reference external" href="http://uws-api-server:80/api/v1/job?phase=executing">http://uws-api-server:80/api/v1/job?phase=executing</a> :
+HTTP code: 200
+[</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“jobId”: “e13ed9f2803842409763b185d4f490e2”,
+“runId”: “my-special-job”,
+“ownerId”: “”,
+“phase”: “executing”,
+“creationTime”: “2021-03-17 20:58:54+00:00”,
+“startTime”: “2021-03-17 20:58:54+00:00”,
+“endTime”: null,
+“executionDuration”: null,
+“destruction”: null,
+“parameters”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“command”: [</dt><dd><p>“/bin/bash”,
+“-c”,
+“cd /uws/jobs/e13ed9f2803842409763b185d4f490e2/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt”</p>
+</dd>
+</dl>
+<p>],
+“environment”: [</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>“name”: “DATA_DIR_COMCAM”,
+“value”: “/data/lsstdata/comcam/oods/butler/repo”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “DATA_DIR_AUXTEL”,
+“value”: “/data/lsstdata/auxTel/oods/butler/repo”</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “JOB_SOURCE_DIR”,
+“value”: “/uws/jobs/e13ed9f2803842409763b185d4f490e2/src”</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “SRC_GIT_URL”,
+“value”: “<a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a>”</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “GIT_COMMIT_REF”,
+“value”: null</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“name”: “JOB_OUTPUT_DIR”,
+“value”: “/uws/jobs/e13ed9f2803842409763b185d4f490e2/out”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+“results”: [],
+“errorSummary”: {</p>
+<blockquote>
+<div><p>“message”: “”</p>
+</div></blockquote>
+<p>},
+“jobInfo”: {}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>]</p>
+<p>Get the results for the job just created:
+GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
+HTTP code: 200
+“executing”</p>
+<p>…</p>
+<p>Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete…
+GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
+HTTP code: 200
+“executing”</p>
+<p>Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete…
+GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
+HTTP code: 200
+“completed”</p>
+<p>Job phase is completed.
+Fetching results…
+GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/results :
+HTTP code: 200
+[</p>
+<blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>“id”: “L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==”,
+“uri”: “/uws/jobs/e13ed9f2803842409763b185d4f490e2/out/dirlist.txt”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>]</p>
+<p>Download result file to “./L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==”.
+Contents of result file “L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==”:
+total 36
+-rw-r–r– 1 lsst lsst  653 Mar 17 20:59 Dockerfile
+-rw-r–r– 1 lsst lsst  436 Mar 17 20:59 Readme.rst
+drwxr-xr-x 2 lsst lsst   98 Mar 17 20:59 client
+drwxr-xr-x 4 lsst lsst  273 Mar 17 20:59 docs
+-rw-r–r– 1 lsst lsst  399 Mar 17 20:59 envvars.py
+-rw-r–r– 1 lsst lsst 1186 Mar 17 20:59 globals.py
+-rwxr-xr-x 1 lsst lsst 1096 Mar 17 20:59 k8s_sync_client.sh
+-rwxr-xr-x 1 lsst lsst 1096 Mar 17 20:59 k8s_sync_server.sh
+-rwxr-xr-x 1 lsst lsst  383 Mar 17 20:59 launch_job_manager.sh
+-rw-r–r– 1 lsst lsst  142 Mar 17 20:59 requirements.txt
+-rwxr-xr-x 1 lsst lsst  449 Mar 17 20:59 run_client.sh
+drwxr-xr-x 3 lsst lsst  212 Mar 17 20:59 server</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, T. Andrew Manning.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
