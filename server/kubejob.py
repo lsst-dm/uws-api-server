@@ -52,7 +52,7 @@ def get_job_root_dir_from_id(job_id):
     return os.path.join(globals.UWS_ROOT_DIR, 'jobs', job_id)
 
 
-def create_job(command, url=None, commit_ref=None, replicas=1, environment=None):
+def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, environment=None):
     response = {
         'job_id': None,
         'api_response': None,
@@ -62,6 +62,8 @@ def create_job(command, url=None, commit_ref=None, replicas=1, environment=None)
     try:
         namespace = get_namespace()
         job_id = generate_uuid()
+        if not run_id:
+            run_id = job_id
         job_name = get_job_name_from_id(job_id)
         job_root_dir = get_job_root_dir_from_id(job_id)
         job_output_dir = os.path.join(job_root_dir, 'out')
@@ -79,6 +81,7 @@ def create_job(command, url=None, commit_ref=None, replicas=1, environment=None)
         template = Template(templateText)
         job_body = yaml.safe_load(template.render(
             name=job_name,
+            runId=run_id,
             jobId=job_id,
             namespace=namespace,
             backoffLimit=0,
@@ -119,7 +122,7 @@ def create_job(command, url=None, commit_ref=None, replicas=1, environment=None)
     return response
 
 
-def list_jobs(phase=None):
+def list_jobs(job_id=None):
     jobs = []
     response = {
         'jobs': jobs,
@@ -128,10 +131,15 @@ def list_jobs(phase=None):
     }
     try:
         namespace = get_namespace()
-        api_response = api_batch_v1.list_namespaced_job(
-            namespace=namespace, 
-        )
-        # Assume only one job is in the list
+        if job_id:
+            api_response = api_batch_v1.list_namespaced_job(
+                namespace=namespace, 
+                label_selector=f'jobId={job_id}'
+            )
+        else:
+            api_response = api_batch_v1.list_namespaced_job(
+                namespace=namespace, 
+            )
         for item in api_response.items:
             envvars = []
             for envvar in item.spec.template.spec.containers[0].env:
@@ -143,6 +151,7 @@ def list_jobs(phase=None):
                 'name': item.metadata.name,
                 'creation_time': item.metadata.creation_timestamp,
                 'job_id': item.metadata.labels['jobId'],
+                'run_id': item.metadata.labels['runId'],
                 'command': item.spec.template.spec.containers[0].command,
                 'environment': envvars,
                 'status': {
@@ -161,60 +170,6 @@ def list_jobs(phase=None):
         response['message'] = msg
     return response
     
-def list_job(job_id):
-    response = {
-        'name': None,
-        'creation_time': None,
-        'job_id': job_id,
-        'command': None,
-        'environment': None,
-        'status': {
-            'active': None,
-            'start_time': None,
-            'completion_time': None,
-            'succeeded': None,
-            'failed': None,
-        },
-        'message': '',
-        'error_code': globals.HTTP_NOT_FOUND,
-    }
-    try:
-        namespace = get_namespace()
-        # job_name = get_job_name_from_id
-        api_response = api_batch_v1.list_namespaced_job(
-            namespace=namespace, 
-            label_selector=f'jobId={job_id}'
-        )
-        # Assume only one job is in the list
-        for item in api_response.items:
-            envvars = []
-            for envvar in item.spec.template.spec.containers[0].env:
-                envvars.append({
-                    'name': envvar.name,
-                    'value': envvar.value,
-                })
-            response = {
-                'name': item.metadata.name,
-                'creation_time': item.metadata.creation_timestamp,
-                'job_id': item.metadata.labels['jobId'],
-                'command': item.spec.template.spec.containers[0].command,
-                'environment': envvars,
-                'status': {
-                    'active': True if item.status.active else False,
-                    'start_time': item.status.start_time,
-                    'completion_time': item.status.completion_time,
-                    'succeeded': True if item.status.succeeded else False,
-                    'failed': True if item.status.failed else False,
-                },
-                'message': '',
-                'error_code': globals.HTTP_OK,
-            }
-    except Exception as e:
-        msg = str(e)
-        log.error(msg)
-        response['error_code'] = globals.HTTP_SERVER_ERROR
-        response['message'] = msg
-    return response
 
 def delete_job(job_id):
     response = {

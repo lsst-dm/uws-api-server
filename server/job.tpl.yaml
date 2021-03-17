@@ -18,6 +18,7 @@ spec:
       labels:
         type: "uws-job"
         jobId: {{ jobId }}
+        runId: {{ runId }}
     spec:
       restartPolicy: Never
       # securityContext:

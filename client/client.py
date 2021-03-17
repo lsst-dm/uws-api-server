@@ -8,14 +8,15 @@ config = {
 }
 
 
-def list_jobs(category):
-    response = requests.get(
-        '{}/job/list/{}'.format(config['apiBaseUrl'], category),
-    )
+def list_jobs(phase=''):
+    phaseQuery = f'?phase={phase}' if phase else ''
+    url = f'{config["apiBaseUrl"]}/job{phaseQuery}'
+    response = requests.get(url)
     try:
-        print('GET {}/job/list/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, category, response.status_code, json.dumps(response.json(), indent=2)))
+        responseText = json.dumps(response.json(), indent=2)
     except:
-        print('GET {}/job/list/{} :\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, category, response.status_code, response))
+        responseText = json.dumps(response.text)
+    print(f'GET {url} :\nHTTP code: {response.status_code}\n{responseText}\n\n')
     return response
 
 
@@ -39,22 +40,24 @@ def get_job(job_id, property=None):
     return response
 
 
-def create_job(command='sleep 120', url=None, commit_ref=None):
+def create_job(command='sleep 120', run_id=None, git_url=None, commit_ref=None):
     payload = {
         'command': command,
-        'url': url,
+        'run_id': run_id,
+        'url': git_url,
         'commit_ref': commit_ref,
     }
+    url = f'{config["apiBaseUrl"]}/job'
     response = requests.put(
-        '{}/job'.format(config['apiBaseUrl']),
+        url=url,
         json=payload
     )
     try:
-        print('PUT {}/job :\npayload: {}\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, payload, response.status_code, json.dumps(response.json(), indent=2)))
-        return response.json()
+        responseText = json.dumps(response.json(), indent=2)
     except:
-        print('PUT {}/job :\npayload: {}\nHTTP code: {}\n{}\n\n'.format(globals.API_BASEPATH, payload, response.status_code, response))
-        return response.text
+        responseText = json.dumps(response.text)
+    print(f'PUT {url} :\nHTTP code: {response.status_code}\n{responseText}\n\n')
+    return response
 
 def delete_job(job_id):
     response = requests.delete(
