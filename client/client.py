@@ -108,7 +108,7 @@ if __name__ == '__main__':
     create_response = create_job(
         run_id='pipetask-test',
         command='bash test/pipetask/pipetask.sh', 
-        url='https://github.com/lsst-dm/uws-api-server',
+        git_url='https://github.com/lsst-dm/uws-api-server',
         environment=[
             {
                 'name': 'CONFIG_OVERRIDES',

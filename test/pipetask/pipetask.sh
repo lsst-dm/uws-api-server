@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/bash -e
 
-# Load the sofware and environment configuration
-source "/software/lsstsw/stack3/loadLSST.bash"
+# Load the software and environment configuration
+source "/opt/lsst/software/stack/loadLSST.bash"
 setup lsst_distrib
 export PYTHONPATH=$PYTHONPATH:/usr/lib64/python3.6/site-packages
 
