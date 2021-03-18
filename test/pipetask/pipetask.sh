@@ -11,7 +11,6 @@ export OUTPUT_COLLECTION="u/ocps/$JOB_ID"
 export PIPELINE_YAML="$PIPE_TASKS_DIR/pipelines/DRP.yaml#processCcd"
 
 pipetask run -p ${PIPELINE_YAML} \
-    -C "${CONFIG_OVERRIDES}" \
     -b "${BUTLER_CONFIG}" \
     -i "${INPUT_COLLECTIONS}" \
     -o "${OUTPUT_COLLECTION}" \
