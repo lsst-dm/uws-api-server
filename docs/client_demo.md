@@ -57,11 +57,11 @@ HTTP code: 200
       "environment": [
         {
           "name": "DATA_DIR_COMCAM",
-          "value": "/data/lsstdata/comcam/oods/butler/repo"
+          "value": "/data/lsstdata/comcam/oods/gen3butler/repo"
         },
         {
           "name": "DATA_DIR_AUXTEL",
-          "value": "/data/lsstdata/auxTel/oods/butler/repo"
+          "value": "/data/lsstdata/auxTel/oods/gen3butler/repo"
         },
         {
           "name": "JOB_SOURCE_DIR",

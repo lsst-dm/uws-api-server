@@ -60,10 +60,11 @@ def get_job(job_id, property=None):
     return response
 
 
-def create_job(command='sleep 120', run_id=None, git_url=None, commit_ref=None):
+def create_job(command='sleep 120', run_id=None, environment=[], git_url=None, commit_ref=None):
     payload = {
         'command': command,
         'run_id': run_id,
+        'environment': environment,
         'url': git_url,
         'commit_ref': commit_ref,
     }
@@ -100,10 +101,33 @@ if __name__ == '__main__':
     #     print(f'Deleting job {job["jobId"]}...')
     #     delete_job(job['jobId'])
     
-    print('List all jobs:')
-    list_jobs()
+    # print('List all jobs:')
+    # list_jobs()
     print('Create a job:')
-    create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
+    # create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
+    create_response = create_job(
+        run_id='pipetask-test',
+        command='bash test/pipetask/pipetask.sh', 
+        url='https://github.com/lsst-dm/uws-api-server',
+        environment=[
+            {
+                'name': 'CONFIG_OVERRIDES',
+                'value': '',
+            },
+            {
+                'name': 'BUTLER_CONFIG',
+                'value': '/repo/main',
+            },
+            {
+                'name': 'INPUT_COLLECTIONS',
+                'value': 'LATISS/raw/all,LATISS/calib',
+            },
+            {
+                'name': 'DATA_QUERY',
+                'value': 'exposure = 2021031100046',
+            },
+        ]
+    )
     job_id = create_response.json()['job_id']
     print('List jobs that are executing:')
     list_jobs(phase='executing')
@@ -114,12 +138,12 @@ if __name__ == '__main__':
         time.sleep(3)
         job_phase = get_job(job_id, property='phase').json()
     print(f'Job phase is {job_phase}.')
-    if job_phase == 'completed':
-        print('Fetching results...')
-        results = get_job(job_id, property='results').json()
-        for result in results:
-            downloaded_file = get_result(result_id=result['id'])
-            if downloaded_file:
-                print(f'Contents of result file "{downloaded_file}":')
-                with open(downloaded_file, 'r') as dfile:
-                    print(dfile.read())
+    # if job_phase == 'completed':
+    #     print('Fetching results...')
+    #     results = get_job(job_id, property='results').json()
+    #     for result in results:
+    #         downloaded_file = get_result(result_id=result['id'])
+    #         if downloaded_file:
+    #             print(f'Contents of result file "{downloaded_file}":')
+    #             with open(downloaded_file, 'r') as dfile:
+    #                 print(dfile.read())
