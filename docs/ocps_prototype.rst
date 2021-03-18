@@ -35,10 +35,19 @@ The prototype client (the ``client/client.py`` module) provides some wrapper fun
 See the :doc:`client_demo` for details.
 
 
-Job Management
+Jobs
 ----------------------
 
 Jobs run as Kubernetes Jobs. The container image for each job is the ``lsstsqre/centos:d_latest`` Docker image.
+
+There are environment variables set for all jobs for use by executing scripts:
+
+- ``$JOB_ID`` - provides the job script with the UUID associated with the job.
+- ``$JOB_OUTPUT_DIR`` - provides the job script with the path to the output directory where the job results are expected to be stored.
+- ``$DATA_DIR_*`` - provide the job script with the path to the locations of the available mounted data Butler repos. For example, ``$DATA_DIR_COMCAM`` for ComCam data.
+- ``$JOB_SOURCE_DIR`` - (optional) provides the job script with the path to the location of the cloned git repo.
+- ``$SRC_GIT_URL`` - (optional) provides the job script with the git repo URL.
+- ``$GIT_COMMIT_REF`` - (optional) provides the job script with the git reference specifying the git repo state.
 
 Create a job::
 
