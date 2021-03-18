@@ -83,7 +83,11 @@ spec:
       - name: {{ container_name }}
         image: {{ image }}
         imagePullPolicy: IfNotPresent
-        command: {{ command }}
+        command: 
+        - '/bin/bash'
+        - '-c'
+        - |
+          {{ command }}
         env:
           # The "DATA_DIR_*" variables provide the job script with the path to the locations
           # of the available mounted data Butler repos

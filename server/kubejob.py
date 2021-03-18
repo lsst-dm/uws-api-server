@@ -86,10 +86,8 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             # stripped_url = f'{url}'.strip('/').strip('.git').strip('/').strip()
             # hashed_url = hashlib.sha1(bytes(stripped_url, 'utf-8')).hexdigest()
             clone_dir = os.path.join(job_root_dir, 'src')
-            full_command = '''cd {} && {}'''.format(clone_dir, command)
         else:
             clone_dir = None
-            full_command = '''{}'''.format(command)
         
         with open(os.path.join(os.path.dirname(__file__), "job.tpl.yaml")) as f:
             templateText = f.read()
@@ -108,7 +106,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             #          the server UID is 1000, then files created by the job will not in general 
             #          allow the server to delete them when cleaning up deleted jobs.
             image='lsstsqre/centos:d_latest',
-            command=["/bin/bash", "-c", f'{full_command}'],
+            command=command,
             environment=environment,
             url=url if url else '',
             clone_dir=clone_dir if clone_dir else '',
