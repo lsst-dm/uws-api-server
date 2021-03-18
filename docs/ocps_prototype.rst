@@ -48,6 +48,7 @@ Create a job::
   
     command - command to execute
     run_id - custom identifier for client use only
+    environment - array of objects with name and value specifying the environment variables for the executing script
     url - git repo URL to clone for use by job script
     commit_ref - git reference (branch name, commit, tag) denoting the desired git clone state
 
