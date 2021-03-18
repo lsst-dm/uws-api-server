@@ -104,7 +104,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#client-ocsp-csc">Client - OCSP CSC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#job-management">Job Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jobs">Jobs</a></li>
 </ul>
 </li>
 </ul>
@@ -205,9 +205,18 @@
 <p>The prototype client (the <code class="docutils literal notranslate"><span class="pre">client/client.py</span></code> module) provides some wrapper functions around the API server endpoints, as well as a demo of some HTTP requests that create and manage jobs.</p>
 <p>See the <a class="reference internal" href="client_demo.html"><span class="doc">UWS Client Demo</span></a> for details.</p>
 </div>
-<div class="section" id="job-management">
-<h2>Job Management<a class="headerlink" href="#job-management" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="jobs">
+<h2>Jobs<a class="headerlink" href="#jobs" title="Permalink to this headline">¶</a></h2>
 <p>Jobs run as Kubernetes Jobs. The container image for each job is the <code class="docutils literal notranslate"><span class="pre">lsstsqre/centos:d_latest</span></code> Docker image.</p>
+<p>There are environment variables set for all jobs for use by executing scripts:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">$JOB_ID</span></code> - provides the job script with the UUID associated with the job.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$JOB_OUTPUT_DIR</span></code> - provides the job script with the path to the output directory where the job results are expected to be stored.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$DATA_DIR_*</span></code> - provide the job script with the path to the locations of the available mounted data Butler repos. For example, <code class="docutils literal notranslate"><span class="pre">$DATA_DIR_COMCAM</span></code> for ComCam data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$JOB_SOURCE_DIR</span></code> - (optional) provides the job script with the path to the location of the cloned git repo.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$SRC_GIT_URL</span></code> - (optional) provides the job script with the git repo URL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$GIT_COMMIT_REF</span></code> - (optional) provides the job script with the git reference specifying the git repo state.</p></li>
+</ul>
 <p>Create a job:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">job</span>
 
