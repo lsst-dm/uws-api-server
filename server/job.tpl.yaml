@@ -88,9 +88,9 @@ spec:
           # The "DATA_DIR_*" variables provide the job script with the path to the locations
           # of the available mounted data Butler repos
           - name: "DATA_DIR_COMCAM"
-            value: "/data/lsstdata/comcam/oods/butler/repo"
+            value: "/data/lsstdata/comcam/oods/gen3butler/repo"
           - name: "DATA_DIR_AUXTEL"
-            value: "/data/lsstdata/auxTel/oods/butler/repo"
+            value: "/data/lsstdata/auxTel/oods/gen3butler/repo"
           {% if clone_dir %}
           # The "JOB_SOURCE_DIR" provides the job script with the path to the location 
           # of the cloned git repo (optional).
@@ -105,6 +105,9 @@ spec:
           # directory where the job results are expected to be stored.
           - name: "JOB_OUTPUT_DIR"
             value: "{{ job_output_dir }}"
+          # The "JOB_ID" provides the job script with the UUID associated with the job.
+          - name: "JOB_ID"
+            value: "{{ jobId }}"
           # Custom environment variables are defined here if provided in the job creation request
           {% for env in environment %}
           - name: "{{ env.name }}"
@@ -117,9 +120,9 @@ spec:
           mountPath: /lsstdata/offline/teststand
           readOnly: true
         - name: nfs-oods-comcam
-          mountPath: /data/lsstdata/comcam/oods/butler/repo
+          mountPath: /data/lsstdata/comcam/oods/gen3butler/repo
           # readOnly: true
         - name: nfs-oods-auxtel
-          mountPath: /data/lsstdata/auxTel/oods/butler/repo
+          mountPath: /data/lsstdata/auxTel/oods/gen3butler/repo
           # readOnly: true
 
