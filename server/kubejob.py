@@ -7,7 +7,6 @@ import shutil
 import yaml
 from jinja2 import Template
 import uuid
-# import hashlib
 
 # Configure logging
 log = logging.getLogger(__name__)
@@ -66,6 +65,100 @@ def list_job_output_files(job_id):
         log.error(str(e))
         raise e
     return job_filepaths
+
+
+def list_jobs(job_id=None):
+    jobs = []
+    response = {
+        'jobs': jobs,
+        'status': globals.STATUS_OK,
+        'message': '',
+    }
+    try:
+        namespace = get_namespace()
+        if job_id:
+            api_response = api_batch_v1.list_namespaced_job(
+                namespace=namespace, 
+                label_selector=f'jobId={job_id}'
+            )
+        else:
+            api_response = api_batch_v1.list_namespaced_job(
+                namespace=namespace, 
+            )
+        for item in api_response.items:
+            envvars = []
+            for envvar in item.spec.template.spec.containers[0].env:
+                envvars.append({
+                    'name': envvar.name,
+                    'value': envvar.value,
+                })
+            job = {
+                'name': item.metadata.name,
+                'creation_time': item.metadata.creation_timestamp,
+                'job_id': item.metadata.labels['jobId'],
+                'run_id': item.metadata.labels['runId'],
+                'command': item.spec.template.spec.containers[0].command,
+                'environment': envvars,
+                'output_files': list_job_output_files(item.metadata.labels['jobId']),
+                'status': {
+                    'active': True if item.status.active else False,
+                    'start_time': item.status.start_time,
+                    'completion_time': item.status.completion_time,
+                    'succeeded': True if item.status.succeeded else False,
+                    'failed': True if item.status.failed else False,
+                },
+            }
+            jobs.append(job)
+        response['jobs'] = jobs
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+        response['status'] = globals.STATUS_ERROR
+        response['message'] = msg
+    return response
+
+
+def delete_job(job_id):
+    response = {
+        'status': globals.STATUS_OK,
+        'message': '',
+        'code': globals.HTTP_OK,
+    }
+    try:
+        namespace = get_namespace()
+        job_name = get_job_name_from_id(job_id)
+        api_response = api_batch_v1.delete_namespaced_job(
+            namespace=namespace, 
+            name=job_name,
+        )
+        response['status']  = api_response.status if api_response.status else response['status']
+        response['message'] = api_response.message if api_response.message else response['message']
+        response['code']    = api_response.code if api_response.code else response['code']
+    except ApiException as e:
+        msg = str(e)
+        response['message'] = msg 
+        if msg.startswith('(404)'):
+            response['code'] = globals.HTTP_NOT_FOUND
+        else:
+            response['status'] = globals.STATUS_ERROR
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+        response['status'] = globals.STATUS_ERROR
+        response['message'] += f'\n\n{msg}'
+    try:
+        # Delete the job files if they exist
+        job_root_dir = get_job_root_dir_from_id(job_id)
+        if os.path.isdir(job_root_dir):
+            log.debug(f'Deleting job files "{job_root_dir}"')
+            shutil.rmtree(job_root_dir)
+    except Exception as e:
+        msg = str(e)
+        log.error(msg)
+        response['status'] = globals.STATUS_ERROR
+        response['message'] += f'\n\n{msg}'
+    return response
+
 
 def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, environment=None):
     response = {
@@ -132,97 +225,4 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         log.error(msg)
         response['message'] = msg
         response['status'] = globals.STATUS_ERROR
-    return response
-
-
-def list_jobs(job_id=None):
-    jobs = []
-    response = {
-        'jobs': jobs,
-        'status': globals.STATUS_OK,
-        'message': '',
-    }
-    try:
-        namespace = get_namespace()
-        if job_id:
-            api_response = api_batch_v1.list_namespaced_job(
-                namespace=namespace, 
-                label_selector=f'jobId={job_id}'
-            )
-        else:
-            api_response = api_batch_v1.list_namespaced_job(
-                namespace=namespace, 
-            )
-        for item in api_response.items:
-            envvars = []
-            for envvar in item.spec.template.spec.containers[0].env:
-                envvars.append({
-                    'name': envvar.name,
-                    'value': envvar.value,
-                })
-            job = {
-                'name': item.metadata.name,
-                'creation_time': item.metadata.creation_timestamp,
-                'job_id': item.metadata.labels['jobId'],
-                'run_id': item.metadata.labels['runId'],
-                'command': item.spec.template.spec.containers[0].command,
-                'environment': envvars,
-                'output_files': list_job_output_files(item.metadata.labels['jobId']),
-                'status': {
-                    'active': True if item.status.active else False,
-                    'start_time': item.status.start_time,
-                    'completion_time': item.status.completion_time,
-                    'succeeded': True if item.status.succeeded else False,
-                    'failed': True if item.status.failed else False,
-                },
-            }
-            jobs.append(job)
-        response['jobs'] = jobs
-    except Exception as e:
-        msg = str(e)
-        log.error(msg)
-        response['status'] = globals.STATUS_ERROR
-        response['message'] = msg
-    return response
-    
-
-def delete_job(job_id):
-    response = {
-        'status': globals.STATUS_OK,
-        'message': '',
-        'code': globals.HTTP_OK,
-    }
-    try:
-        namespace = get_namespace()
-        job_name = get_job_name_from_id(job_id)
-        api_response = api_batch_v1.delete_namespaced_job(
-            namespace=namespace, 
-            name=job_name,
-        )
-        response['status']  = api_response.status if api_response.status else response['status']
-        response['message'] = api_response.message if api_response.message else response['message']
-        response['code']    = api_response.code if api_response.code else response['code']
-    except ApiException as e:
-        msg = str(e)
-        response['message'] = msg 
-        if msg.startswith('(404)'):
-            response['code'] = globals.HTTP_NOT_FOUND
-        else:
-            response['status'] = globals.STATUS_ERROR
-    except Exception as e:
-        msg = str(e)
-        log.error(msg)
-        response['status'] = globals.STATUS_ERROR
-        response['message'] += f'\n\n{msg}'
-    try:
-        # Delete the job files if they exist
-        job_root_dir = get_job_root_dir_from_id(job_id)
-        if os.path.isdir(job_root_dir):
-            log.debug(f'Deleting job files "{job_root_dir}"')
-            shutil.rmtree(job_root_dir)
-    except Exception as e:
-        msg = str(e)
-        log.error(msg)
-        response['status'] = globals.STATUS_ERROR
-        response['message'] += f'\n\n{msg}'
     return response

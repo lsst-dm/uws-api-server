@@ -171,6 +171,145 @@ def construct_job_object(job_info):
     return job
 
 
+class JobHandler(BaseHandler):
+    def put(self):
+        try:
+            # Command that the job container will execute
+            command = self.getarg('command') # required 
+            # Valid run_id value follows the Kubernetes label value constraints:
+            #   - must be 63 characters or less (cannot be empty),
+            #   - must begin and end with an alphanumeric character ([a-z0-9A-Z]),
+            #   - could contain dashes (-), underscores (_), dots (.), and alphanumerics between.
+            # See also:
+            #   - https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#runId
+            #   - https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
+            run_id = self.getarg('run_id', default='') # optional
+            if run_id and (run_id != re.sub(r'[^-._a-zA-Z0-9]', "", run_id) or not re.match(r'[a-zA-Z0-9]', run_id)):
+                self.send_response('Invalid run_id. Must be 63 characters or less and begin with alphanumeric character and contain only dashes (-), underscores (_), dots (.), and alphanumerics between.', http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
+                self.finish()
+                return
+            # environment is a list of environment variable names and values like [{'name': 'env1', 'value': 'val1'}]
+            environment = self.getarg('environment', default=[]) # optional
+            # Number of parallel job containers to run. The containers will execute identical code. Coordination is the 
+            # responsibility of the job owner.
+            replicas = self.getarg('replicas', default=1) # optional
+            # The URL of the git repo to clone
+            url = self.getarg('url', default='') # optional
+            # The git reference (branch name or commit hash) to be checked out after cloning the git repo
+            commit_ref = self.getarg('commit_ref', default='') # optional
+        except:
+            self.finish()
+            return
+        response = kubejob.create_job(
+            command=command, 
+            run_id=run_id,
+            replicas=replicas,
+            environment=environment,
+            url=url, 
+            commit_ref=commit_ref,
+        )
+        log.debug(response)
+        if response['status'] != globals.STATUS_OK:
+            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+            self.finish()
+            return
+        else:
+            self.send_response(response, indent=2)
+            self.finish()
+            return
+        
+    def get(self, job_id=None, property=None):
+        # See https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#resourceuri
+        valid_properties = {
+            'phase': 'phase',
+            # 'executionduration',
+            # 'destruction',
+            # 'error',
+            # 'quote',
+            'results': 'results',
+            'parameters': 'parameters',
+            # 'owner': 'ownerId',
+        }
+        response = {}
+        # If no job_id is included in the request URL, return a list of jobs. See:
+        # UWS Schema: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#UWSSchema
+        if not job_id:
+            phase = self.getarg('phase', default='') # optional
+            if not phase or phase in globals.VALID_JOB_STATUSES:
+                results = kubejob.list_jobs()
+                if results['status'] != globals.STATUS_OK:
+                    self.send_response(results['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+                    self.finish()
+                    return
+            else:
+                response = 'Valid job categories are: {}'.format(globals.VALID_JOB_STATUSES)
+                self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
+                self.finish()
+                return
+            # Construct the UWS-compatible list of job objects
+            jobs = []
+            for job_info in results['jobs']:
+                job = construct_job_object(job_info)
+                if not phase or job['phase'] == phase:
+                    jobs.append(job)
+            self.send_response(jobs, indent=2)
+            self.finish()
+            return
+        # If a job_id is provided but it is invalid, then the request is malformed:
+        if not valid_job_id(job_id):
+            self.send_response('Invalid job ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+            self.finish()
+            return
+        # If a property is provided but it is invalid, then the request is malformed:
+        elif isinstance(property, str) and property not in valid_properties:
+            self.send_response(f'Invalid job property requested. Supported properties are {", ".join([key for key in valid_properties.keys()])}', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+            self.finish()
+            return
+        else:
+            try:
+                results = kubejob.list_jobs(
+                    job_id=job_id, 
+                )
+                if results['status'] != globals.STATUS_OK:
+                    self.send_response(results['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+                    self.finish()
+                    return
+                if not results['jobs']:
+                    self.send_response(results['message'], http_status_code=globals.HTTP_NOT_FOUND)
+                    self.finish()
+                    return
+                job = construct_job_object(results['jobs'][0])
+                
+                # If a specific job property was requested using an API endpoint 
+                # of the form `/job/[job_id]/[property]]`, return that property only.
+                if property in valid_properties.keys():
+                    self.send_response(job[valid_properties[property]], indent=2)
+                else:
+                    self.send_response(job, indent=2)
+                self.finish()
+                return
+            except Exception as e:
+                response = str(e).strip()
+                log.error(response)
+                self.send_response(response, http_status_code=globals.HTTP_SERVER_ERROR, indent=2)
+                self.finish()
+                return
+
+    def delete(self, job_id):
+        response = kubejob.delete_job(
+            job_id=job_id, 
+        )
+        log.debug(response)
+        if response['status'] == globals.STATUS_ERROR:
+            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+        elif isinstance(response['code'], int) and response['code'] != globals.HTTP_OK:
+            self.send_response(response['message'], http_status_code=response['code'], return_json=False)
+        else:
+            self.send_response(response, indent=2)
+        self.finish()
+        return
+        
+
 class ResultFileHandler(BaseHandler):
     def get(self, result_id=None):
         try:
@@ -211,157 +350,10 @@ class ResultFileHandler(BaseHandler):
             return
 
 
-class JobHandler(BaseHandler):
-    def put(self):
-        try:
-            # Command that the job container will execute
-            command = self.getarg('command') # required 
-            # Valid run_id value follows the Kubernetes label value constraints:
-            #   - must be 63 characters or less (cannot be empty),
-            #   - must begin and end with an alphanumeric character ([a-z0-9A-Z]),
-            #   - could contain dashes (-), underscores (_), dots (.), and alphanumerics between.
-            # See also:
-            #   - https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#runId
-            #   - https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
-            run_id = self.getarg('run_id', default='') # optional
-            if run_id and (run_id != re.sub(r'[^-._a-zA-Z0-9]', "", run_id) or not re.match(r'[a-zA-Z0-9]', run_id)):
-                self.send_response('Invalid run_id. Must be 63 characters or less and begin with alphanumeric character and contain only dashes (-), underscores (_), dots (.), and alphanumerics between.', http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
-                self.finish()
-                return
-            # The URL of the git repo to clone
-            url = self.getarg('url', default='') # optional
-            # The git reference (branch name or commit hash) to be checked out after cloning the git repo
-            commit_ref = self.getarg('commit_ref', default='') # optional
-            # environment is a list of environment variable names and values like [{'name': 'env1', 'value': 'val1'}]
-            environment = self.getarg('environment', default=[]) # optional
-            # Number of parallel job containers to run. The containers will execute identical code. Coordination is the 
-            # responsibility of the job owner.
-            replicas = self.getarg('replicas', default=1) # optional
-        except:
-            self.finish()
-            return
-        response = kubejob.create_job(
-            command=command, 
-            run_id=run_id,
-            url=url, 
-            commit_ref=commit_ref,
-            replicas=replicas,
-            environment=environment,
-        )
-        log.debug(response)
-        if response['status'] != globals.STATUS_OK:
-            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
-            self.finish()
-            return
-        else:
-            self.send_response(response, indent=2)
-            self.finish()
-            return
-        
-    def get(self, job_id=None, property=None):
-        # See https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#resourceuri
-        valid_properties = [
-            'phase',
-            # 'executionduration',
-            # 'destruction',
-            # 'error',
-            # 'quote',
-            'results',
-            'parameters',
-            # 'owner',
-        ]
-        response = {}
-        # If no job_id is included in the request URL, return a list of jobs. See:
-        # UWS Schema: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#UWSSchema
-        if not job_id:
-            phase = self.getarg('phase', default='') # optional
-            if not phase or phase in globals.VALID_JOB_STATUSES:
-                results = kubejob.list_jobs()
-                if results['status'] != globals.STATUS_OK:
-                    self.send_response(results['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
-                    self.finish()
-                    return
-            else:
-                response = 'Valid job categories are: {}'.format(globals.VALID_JOB_STATUSES)
-                self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
-                self.finish()
-                return
-            # Construct the UWS-compatible list of job objects
-            jobs = []
-            for job_info in results['jobs']:
-                job = construct_job_object(job_info)
-                if not phase or job['phase'] == phase:
-                    jobs.append(job)
-            self.send_response(jobs, indent=2)
-            self.finish()
-            return
-        # If a job_id is provided but it is invalid, then the request is malformed:
-        if not valid_job_id(job_id):
-            self.send_response('Invalid job ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
-            self.finish()
-            return
-        # If a property is provided but it is invalid, then the request is malformed:
-        elif isinstance(property, str) and property not in valid_properties:
-            self.send_response('Invalid job property requested.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
-            self.finish()
-            return
-        else:
-            try:
-                results = kubejob.list_jobs(
-                    job_id=job_id, 
-                )
-                if results['status'] != globals.STATUS_OK:
-                    self.send_response(results['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
-                    self.finish()
-                    return
-                if not results['jobs']:
-                    self.send_response(results['message'], http_status_code=globals.HTTP_NOT_FOUND)
-                    self.finish()
-                    return
-                job = construct_job_object(results['jobs'][0])
-                
-                # If a specific job property was requested using an API endpoint 
-                # of the form `/job/[job_id]/[property]]`, return that property only.
-                # TODO: If the other API endpoints defined in the UWS pattern spec such 
-                # as `executionduration` are implemented, there will need to be a mapping 
-                # instead of direct key substitution, because `executionduration` corresponds
-                # to `executionDuration` in the job object spec.
-                if property in ['phase', 'results', 'parameters']:
-                    self.send_response(job[property], indent=2)
-                else:
-                    self.send_response(job, indent=2)
-                self.finish()
-                return
-            except Exception as e:
-                response = str(e).strip()
-                log.error(response)
-                self.send_response(response, http_status_code=globals.HTTP_SERVER_ERROR, indent=2)
-                self.finish()
-                return
-
-    def delete(self, job_id):
-        response = kubejob.delete_job(
-            job_id=job_id, 
-        )
-        log.debug(response)
-        if response['status'] == globals.STATUS_ERROR:
-            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
-        elif isinstance(response['code'], int) and response['code'] != globals.HTTP_OK:
-            self.send_response(response['message'], http_status_code=response['code'], return_json=False)
-        else:
-            self.send_response(response, indent=2)
-        self.finish()
-        return
-        
-
 def make_app(base_path=''):
     settings = {"debug": True}
     return tornado.web.Application(
         [
-            # TODO: Move the job list handler into the /job endpoint to better implement the UWS pattern spec
-            # See https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#jobList
-            # (r"{}/job/(.*)/results/(.*)".format(base_path), ResultFileHandler),
-            # (r"{}/job/(.*)/results/(.*)".format(base_path), tornado.web.RedirectHandler, {"url": "{}/job/results/{0}/{1}".format(base_path)}),
             (r"{}/job/result/(.*)".format(base_path), ResultFileHandler),
             (r"{}/job/(.*)/(.*)".format(base_path), JobHandler),
             (r"{}/job/(.*)".format(base_path), JobHandler),
