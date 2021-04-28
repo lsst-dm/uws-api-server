@@ -1,11 +1,11 @@
-name: uws-api-server
+name: uws-api-server-dev
 
 on:
   push:
     branches:
-      - 'master'
+      - 'dev'
     paths:
-    - '.github/workflows/build-uws-api-server.yaml'
+    - '.github/workflows/build-uws-api-server-dev.yaml'
     - 'Dockerfile'
     - 'requirements.txt'
     - 'globals.py'
@@ -50,7 +50,7 @@ jobs:
         with:
           context: src
           push: true
-          tags: lsstdm/uws-api-server:latest
+          tags: lsstdm/uws-api-server:dev
           # From https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
