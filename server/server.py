@@ -1,4 +1,4 @@
-import globals
+import global_vars
 import logging
 import tornado.ioloop
 import tornado.web
@@ -74,7 +74,7 @@ class BaseHandler(tornado.web.RequestHandler):
             # 400 Bad Request: The server could not understand the request due to invalid syntax.
             # The assumption is that if a function uses `getarg()` to get a required parameter,
             # then the request must be a bad request if this exception occurs.
-            self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
+            self.send_response(response, http_status_code=global_vars.HTTP_BAD_REQUEST, return_json=False)
             raise e
         return value
 
@@ -83,7 +83,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if isinstance(o, datetime):
             return o.__str__()
         
-    def send_response(self, data, http_status_code=globals.HTTP_OK, return_json=True, indent=None):
+    def send_response(self, data, http_status_code=global_vars.HTTP_OK, return_json=True, indent=None):
         if return_json:
             if indent:
                 self.write(json.dumps(data, indent=indent, default = self.json_converter))
@@ -185,7 +185,7 @@ class JobHandler(BaseHandler):
             #   - https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
             run_id = self.getarg('run_id', default='') # optional
             if run_id and (run_id != re.sub(r'[^-._a-zA-Z0-9]', "", run_id) or not re.match(r'[a-zA-Z0-9]', run_id)):
-                self.send_response('Invalid run_id. Must be 63 characters or less and begin with alphanumeric character and contain only dashes (-), underscores (_), dots (.), and alphanumerics between.', http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
+                self.send_response('Invalid run_id. Must be 63 characters or less and begin with alphanumeric character and contain only dashes (-), underscores (_), dots (.), and alphanumerics between.', http_status_code=global_vars.HTTP_BAD_REQUEST, return_json=False)
                 self.finish()
                 return
             # environment is a list of environment variable names and values like [{'name': 'env1', 'value': 'val1'}]
@@ -209,8 +209,8 @@ class JobHandler(BaseHandler):
             commit_ref=commit_ref,
         )
         log.debug(response)
-        if response['status'] != globals.STATUS_OK:
-            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+        if response['status'] != global_vars.STATUS_OK:
+            self.send_response(response['message'], http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
             self.finish()
             return
         else:
@@ -235,15 +235,15 @@ class JobHandler(BaseHandler):
         # UWS Schema: https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#UWSSchema
         if not job_id:
             phase = self.getarg('phase', default='') # optional
-            if not phase or phase in globals.VALID_JOB_STATUSES:
+            if not phase or phase in global_vars.VALID_JOB_STATUSES:
                 results = kubejob.list_jobs()
-                if results['status'] != globals.STATUS_OK:
-                    self.send_response(results['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+                if results['status'] != global_vars.STATUS_OK:
+                    self.send_response(results['message'], http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
                     self.finish()
                     return
             else:
-                response = 'Valid job categories are: {}'.format(globals.VALID_JOB_STATUSES)
-                self.send_response(response, http_status_code=globals.HTTP_BAD_REQUEST, return_json=False)
+                response = 'Valid job categories are: {}'.format(global_vars.VALID_JOB_STATUSES)
+                self.send_response(response, http_status_code=global_vars.HTTP_BAD_REQUEST, return_json=False)
                 self.finish()
                 return
             # Construct the UWS-compatible list of job objects
@@ -257,12 +257,12 @@ class JobHandler(BaseHandler):
             return
         # If a job_id is provided but it is invalid, then the request is malformed:
         if not valid_job_id(job_id):
-            self.send_response('Invalid job ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+            self.send_response('Invalid job ID.', http_status_code=global_vars.HTTP_BAD_REQUEST, indent=2)
             self.finish()
             return
         # If a property is provided but it is invalid, then the request is malformed:
         elif isinstance(property, str) and property not in valid_properties:
-            self.send_response(f'Invalid job property requested. Supported properties are {", ".join([key for key in valid_properties.keys()])}', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+            self.send_response(f'Invalid job property requested. Supported properties are {", ".join([key for key in valid_properties.keys()])}', http_status_code=global_vars.HTTP_BAD_REQUEST, indent=2)
             self.finish()
             return
         else:
@@ -270,12 +270,12 @@ class JobHandler(BaseHandler):
                 results = kubejob.list_jobs(
                     job_id=job_id, 
                 )
-                if results['status'] != globals.STATUS_OK:
-                    self.send_response(results['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
+                if results['status'] != global_vars.STATUS_OK:
+                    self.send_response(results['message'], http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
                     self.finish()
                     return
                 if not results['jobs']:
-                    self.send_response(results['message'], http_status_code=globals.HTTP_NOT_FOUND)
+                    self.send_response(results['message'], http_status_code=global_vars.HTTP_NOT_FOUND)
                     self.finish()
                     return
                 job = construct_job_object(results['jobs'][0])
@@ -291,7 +291,7 @@ class JobHandler(BaseHandler):
             except Exception as e:
                 response = str(e).strip()
                 log.error(response)
-                self.send_response(response, http_status_code=globals.HTTP_SERVER_ERROR, indent=2)
+                self.send_response(response, http_status_code=global_vars.HTTP_SERVER_ERROR, indent=2)
                 self.finish()
                 return
 
@@ -300,9 +300,9 @@ class JobHandler(BaseHandler):
             job_id=job_id, 
         )
         log.debug(response)
-        if response['status'] == globals.STATUS_ERROR:
-            self.send_response(response['message'], http_status_code=globals.HTTP_SERVER_ERROR, return_json=False)
-        elif isinstance(response['code'], int) and response['code'] != globals.HTTP_OK:
+        if response['status'] == global_vars.STATUS_ERROR:
+            self.send_response(response['message'], http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
+        elif isinstance(response['code'], int) and response['code'] != global_vars.HTTP_OK:
             self.send_response(response['message'], http_status_code=response['code'], return_json=False)
         else:
             self.send_response(response, indent=2)
@@ -315,22 +315,22 @@ class ResultFileHandler(BaseHandler):
         try:
             # # If a job_id is provided but it is invalid, then the request is malformed:
             # if not valid_job_id(job_id):
-            #     self.send_response('Invalid job ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+            #     self.send_response('Invalid job ID.', http_status_code=global_vars.HTTP_BAD_REQUEST, indent=2)
             #     self.finish()
             #     return
             # If a result_id is not provided, then the request is malformed:
             if not result_id:
-                self.send_response('Invalid result ID.', http_status_code=globals.HTTP_BAD_REQUEST, indent=2)
+                self.send_response('Invalid result ID.', http_status_code=global_vars.HTTP_BAD_REQUEST, indent=2)
                 self.finish()
                 return
             try:
                 file_path = str(base64.b64decode(bytes(result_id, 'utf-8')), 'utf-8')
             except:
-                self.send_response('Result file not found.', http_status_code=globals.HTTP_NOT_FOUND, return_json=False)
+                self.send_response('Result file not found.', http_status_code=global_vars.HTTP_NOT_FOUND, return_json=False)
                 self.finish()
                 return
             if not os.path.isfile(file_path):
-                self.send_response('Result file not found.', http_status_code=globals.HTTP_NOT_FOUND, return_json=False)
+                self.send_response('Result file not found.', http_status_code=global_vars.HTTP_NOT_FOUND, return_json=False)
                 self.finish()
                 return
             content_type, _ = guess_type(file_path)
@@ -345,7 +345,7 @@ class ResultFileHandler(BaseHandler):
         except Exception as e:
             response = str(e).strip()
             log.error(response)
-            self.send_response(response, http_status_code=globals.HTTP_SERVER_ERROR, indent=2)
+            self.send_response(response, http_status_code=global_vars.HTTP_SERVER_ERROR, indent=2)
             self.finish()
             return
 
@@ -364,7 +364,7 @@ def make_app(base_path=''):
 
 
 if __name__ == "__main__":
-    app = make_app(base_path=globals.API_BASEPATH)
-    app.listen(int(globals.API_PORT))
-    log.info('UWS API server online at {}://{}:{}{}'.format(globals.API_PROTOCOL, globals.API_DOMAIN, globals.API_PORT, globals.API_BASEPATH))
+    app = make_app(base_path=global_vars.API_BASEPATH)
+    app.listen(int(global_vars.API_PORT))
+    log.info('UWS API server online at {}://{}:{}{}'.format(global_vars.API_PROTOCOL, global_vars.API_DOMAIN, global_vars.API_PORT, global_vars.API_BASEPATH))
     tornado.ioloop.IOLoop.current().start()

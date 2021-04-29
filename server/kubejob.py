@@ -1,4 +1,4 @@
-import globals
+import global_vars
 import logging
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
@@ -48,7 +48,7 @@ def get_job_name_from_id(job_id):
 
 
 def get_job_root_dir_from_id(job_id):
-    return os.path.join(globals.UWS_ROOT_DIR, 'jobs', job_id)
+    return os.path.join(global_vars.UWS_ROOT_DIR, 'jobs', job_id)
 
 
 def list_job_output_files(job_id):
@@ -71,7 +71,7 @@ def list_jobs(job_id=None):
     jobs = []
     response = {
         'jobs': jobs,
-        'status': globals.STATUS_OK,
+        'status': global_vars.STATUS_OK,
         'message': '',
     }
     try:
@@ -114,16 +114,16 @@ def list_jobs(job_id=None):
     except Exception as e:
         msg = str(e)
         log.error(msg)
-        response['status'] = globals.STATUS_ERROR
+        response['status'] = global_vars.STATUS_ERROR
         response['message'] = msg
     return response
 
 
 def delete_job(job_id):
     response = {
-        'status': globals.STATUS_OK,
+        'status': global_vars.STATUS_OK,
         'message': '',
-        'code': globals.HTTP_OK,
+        'code': global_vars.HTTP_OK,
     }
     try:
         namespace = get_namespace()
@@ -139,13 +139,13 @@ def delete_job(job_id):
         msg = str(e)
         response['message'] = msg 
         if msg.startswith('(404)'):
-            response['code'] = globals.HTTP_NOT_FOUND
+            response['code'] = global_vars.HTTP_NOT_FOUND
         else:
-            response['status'] = globals.STATUS_ERROR
+            response['status'] = global_vars.STATUS_ERROR
     except Exception as e:
         msg = str(e)
         log.error(msg)
-        response['status'] = globals.STATUS_ERROR
+        response['status'] = global_vars.STATUS_ERROR
         response['message'] += f'\n\n{msg}'
     try:
         # Delete the job files if they exist
@@ -156,7 +156,7 @@ def delete_job(job_id):
     except Exception as e:
         msg = str(e)
         log.error(msg)
-        response['status'] = globals.STATUS_ERROR
+        response['status'] = global_vars.STATUS_ERROR
         response['message'] += f'\n\n{msg}'
     return response
 
@@ -166,7 +166,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         'job_id': None,
         'api_response': None,
         'message': None,
-        'status': globals.STATUS_OK,
+        'status': global_vars.STATUS_OK,
     }
     try:
         namespace = get_namespace()
@@ -183,9 +183,9 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         else:
             clone_dir = None
         
-        project_subpath = globals.PROJECT_SUBPATH
+        project_subpath = global_vars.PROJECT_SUBPATH
         # If targeting NCSA Integration cluster
-        if globals.TARGET_CLUSTER == "int":
+        if global_vars.TARGET_CLUSTER == "int":
             templateFile = "job.int.tpl.yaml"
             # If PROJECT_SUBPATH is provided in the environment variables, use this to mount
             # the specified directory. Otherwise mount the subpath defined in the server's
@@ -221,7 +221,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             url=url if url else '',
             clone_dir=clone_dir if clone_dir else '',
             commit_ref=commit_ref if commit_ref else '',
-            uws_root_dir=globals.UWS_ROOT_DIR,
+            uws_root_dir=global_vars.UWS_ROOT_DIR,
             job_output_dir=job_output_dir,
             project_subpath=project_subpath,
         ))
@@ -236,11 +236,11 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
     # except ApiException as e:
     #     msg = str(e)
     #     log.error(msg)
-    #     response['status'] = globals.STATUS_ERROR
+    #     response['status'] = global_vars.STATUS_ERROR
     #     response['message'] = msg
     except Exception as e:
         msg = str(e)
         log.error(msg)
         response['message'] = msg
-        response['status'] = globals.STATUS_ERROR
+        response['status'] = global_vars.STATUS_ERROR
     return response
