@@ -112,6 +112,10 @@ if __name__ == '__main__':
         git_url='https://github.com/lsst-dm/uws-api-server',
         environment=[
             {
+                'name': 'PROJECT_SUBPATH',
+                'value': 'manninga/projects',
+            },
+            {
                 'name': 'CUSTOM_ENV_VAR',
                 'value': 'Success!',
             },
