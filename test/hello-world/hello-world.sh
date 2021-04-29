@@ -1,8 +1,5 @@
 #!/bin/bash
-set -x
 
 echo "Custom environment variable: ${CUSTOM_ENV_VAR}"
-# List mounted volume contents
+echo "Contents of project path \"${PROJECT_PATH}\" :"
 ls -lan "${PROJECT_PATH}"
-ls -lan /repo
-ls -lan /uws
