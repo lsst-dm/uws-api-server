@@ -10,6 +10,7 @@ This repo implements a Universal Worker Service (UWS) API server for the Vera C.
     Development
     api/Readme
     ocps_prototype
+    Deployment
 
 Links
 ------------------------------
