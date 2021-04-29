@@ -79,11 +79,12 @@ def list_jobs(job_id=None):
         if job_id:
             api_response = api_batch_v1.list_namespaced_job(
                 namespace=namespace, 
-                label_selector=f'jobId={job_id}'
+                label_selector=f'jobId={job_id}',
             )
         else:
             api_response = api_batch_v1.list_namespaced_job(
                 namespace=namespace, 
+                label_selector=f'type=uws-job',
             )
         for item in api_response.items:
             envvars = []
