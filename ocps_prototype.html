@@ -192,9 +192,10 @@
 <p>The prototype OCPS Job Manager is designed as an evolving demonstration of the emerging system.</p>
 <p>The prototype consists of a server and a client.</p>
 <ul class="simple">
-<li><p>The server is a <a class="reference external" href="https://www.tornadoweb.org/en/stable/">Tornado-based webserver</a> written in Python, which runs on the NCSA Test Stand (NTS) Kubernetes cluster.</p></li>
+<li><p>The server is a <a class="reference external" href="https://www.tornadoweb.org/en/stable/">Tornado-based webserver</a> written in Python.</p></li>
 <li><p>The client represents the OCPS CSC that will ultimately be submitting jobs and fetching the results. The client is a Python script that could in principle be executed on any machine that can access the OCPS Job Manager HTTP port.</p></li>
 </ul>
+<p>Currently the prototype can be deployed on the NCSA Test Stand (NTS) and NCSA Integration (INT) Kubernetes clusters.</p>
 </div>
 <div class="section" id="server-ocps-job-manager">
 <h2>Server - OCPS Job Manager<a class="headerlink" href="#server-ocps-job-manager" title="Permalink to this headline">¶</a></h2>
@@ -211,7 +212,6 @@
 <h2>Client - OCSP CSC<a class="headerlink" href="#client-ocsp-csc" title="Permalink to this headline">¶</a></h2>
 <p>As currently envisioned, the data (e.g. camera images) that form the input to the prompt processing jobs will be transferred from the OCS by an independent system; thus the input data is assumed to be accessible to the UWS as a Butler repo residing on some locally mounted storage.</p>
 <p>The prototype client (the <code class="docutils literal notranslate"><span class="pre">client/client.py</span></code> module) provides some wrapper functions around the API server endpoints, as well as a demo of some HTTP requests that create and manage jobs.</p>
-<p>See the <a class="reference internal" href="client_demo.html"><span class="doc">UWS Client Demo</span></a> for details.</p>
 </div>
 <div class="section" id="jobs">
 <h2>Jobs<a class="headerlink" href="#jobs" title="Permalink to this headline">¶</a></h2>
@@ -220,11 +220,16 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">$JOB_ID</span></code> - provides the job script with the UUID associated with the job.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">$JOB_OUTPUT_DIR</span></code> - provides the job script with the path to the output directory where the job results are expected to be stored.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">$DATA_DIR_*</span></code> - provide the job script with the path to the locations of the available mounted data Butler repos. For example, <code class="docutils literal notranslate"><span class="pre">$DATA_DIR_COMCAM</span></code> for ComCam data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$DATA_DIR*</span></code> - (NTS cluster only) provide the job script with the path to the locations of the available mounted data Butler repos. For example, on the NTS there is <code class="docutils literal notranslate"><span class="pre">$DATA_DIR_COMCAM</span></code> for ComCam data and <code class="docutils literal notranslate"><span class="pre">$DATA_DIR_AUXTEL</span></code> for AuxTel data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$PROJECT_PATH</span></code> - (INT cluster only) This points to the subdirectory of <cite>/project</cite> mounted in the job container</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">$JOB_SOURCE_DIR</span></code> - (optional) provides the job script with the path to the location of the cloned git repo.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">$SRC_GIT_URL</span></code> - (optional) provides the job script with the git repo URL.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">$GIT_COMMIT_REF</span></code> - (optional) provides the job script with the git reference specifying the git repo state.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See the <a class="reference internal" href="client_demo.html"><span class="doc">UWS Client Demo</span></a> for an example of how to create and manage a job.</p>
+</div>
 <p>Create a job:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">job</span>
 

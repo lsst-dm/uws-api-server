@@ -10,8 +10,10 @@ The prototype OCPS Job Manager is designed as an evolving demonstration of the e
 
 The prototype consists of a server and a client. 
 
-* The server is a `Tornado-based webserver <https://www.tornadoweb.org/en/stable/>`_ written in Python, which runs on the NCSA Test Stand (NTS) Kubernetes cluster.
+* The server is a `Tornado-based webserver <https://www.tornadoweb.org/en/stable/>`_ written in Python.
 * The client represents the OCPS CSC that will ultimately be submitting jobs and fetching the results. The client is a Python script that could in principle be executed on any machine that can access the OCPS Job Manager HTTP port.
+
+Currently the prototype can be deployed on the NCSA Test Stand (NTS) and NCSA Integration (INT) Kubernetes clusters.
 
 
 Server - OCPS Job Manager
@@ -32,9 +34,6 @@ As currently envisioned, the data (e.g. camera images) that form the input to th
 
 The prototype client (the ``client/client.py`` module) provides some wrapper functions around the API server endpoints, as well as a demo of some HTTP requests that create and manage jobs.
 
-See the :doc:`client_demo` for details.
-
-
 Jobs
 ----------------------
 
@@ -44,10 +43,14 @@ There are environment variables set for all jobs for use by executing scripts:
 
 - ``$JOB_ID`` - provides the job script with the UUID associated with the job.
 - ``$JOB_OUTPUT_DIR`` - provides the job script with the path to the output directory where the job results are expected to be stored.
-- ``$DATA_DIR_*`` - provide the job script with the path to the locations of the available mounted data Butler repos. For example, ``$DATA_DIR_COMCAM`` for ComCam data.
+- ``$DATA_DIR*`` - (NTS cluster only) provide the job script with the path to the locations of the available mounted data Butler repos. For example, on the NTS there is ``$DATA_DIR_COMCAM`` for ComCam data and ``$DATA_DIR_AUXTEL`` for AuxTel data.
+- ``$PROJECT_PATH`` - (INT cluster only) This points to the subdirectory of `/project` mounted in the job container
 - ``$JOB_SOURCE_DIR`` - (optional) provides the job script with the path to the location of the cloned git repo.
 - ``$SRC_GIT_URL`` - (optional) provides the job script with the git repo URL.
 - ``$GIT_COMMIT_REF`` - (optional) provides the job script with the git reference specifying the git repo state.
+
+.. note::
+  See the :doc:`client_demo` for an example of how to create and manage a job.
 
 Create a job::
 

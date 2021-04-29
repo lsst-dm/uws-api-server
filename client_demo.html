@@ -184,118 +184,30 @@
             
   <div class="section" id="uws-client-demo">
 <h1>UWS Client Demo<a class="headerlink" href="#uws-client-demo" title="Permalink to this headline">¶</a></h1>
-<p>The following is a demonstration of basic job creation and management. The client is a Python script running the following code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;List all jobs:&#39;</span><span class="p">)</span>
-<span class="n">list_jobs</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Create a job:&#39;</span><span class="p">)</span>
-<span class="n">create_response</span> <span class="o">=</span> <span class="n">create_job</span><span class="p">(</span><span class="n">command</span><span class="o">=</span><span class="s1">&#39;ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt&#39;</span><span class="p">,</span> <span class="n">git_url</span><span class="o">=</span><span class="s1">&#39;https://github.com/lsst-dm/uws-api-server&#39;</span><span class="p">,</span> <span class="n">run_id</span><span class="o">=</span><span class="s1">&#39;my-special-job&#39;</span><span class="p">)</span>
-<span class="n">job_id</span> <span class="o">=</span> <span class="n">create_response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;job_id&#39;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;List jobs that are executing:&#39;</span><span class="p">)</span>
-<span class="n">list_jobs</span><span class="p">(</span><span class="n">phase</span><span class="o">=</span><span class="s1">&#39;executing&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Get the results for the job just created:&#39;</span><span class="p">)</span>
-<span class="n">job_phase</span> <span class="o">=</span> <span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;phase&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-<span class="k">while</span> <span class="n">job_phase</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pending&#39;</span><span class="p">,</span> <span class="s1">&#39;queued&#39;</span><span class="p">,</span> <span class="s1">&#39;executing&#39;</span><span class="p">]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Job </span><span class="si">{job_id}</span><span class="s1"> phase is </span><span class="si">{job_phase}</span><span class="s1">. Waiting to complete...&#39;</span><span class="p">)</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">job_phase</span> <span class="o">=</span> <span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;phase&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Job phase is </span><span class="si">{job_phase}</span><span class="s1">.&#39;</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">job_phase</span> <span class="o">==</span> <span class="s1">&#39;completed&#39;</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fetching results...&#39;</span><span class="p">)</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">get_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;results&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-        <span class="n">downloaded_file</span> <span class="o">=</span> <span class="n">get_result</span><span class="p">(</span><span class="n">result_id</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">downloaded_file</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Contents of result file &quot;</span><span class="si">{downloaded_file}</span><span class="s1">&quot;:&#39;</span><span class="p">)</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">downloaded_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dfile</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">dfile</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-</pre></div>
-</div>
+<p>The following is a demonstration of basic job creation and management. The client is a Python script running the <code class="docutils literal notranslate"><span class="pre">client.py</span></code> script found here: https://github.com/lsst-dm/uws-api-server/blob/master/client/client.py.</p>
 <p>The output of this script is the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>worker@uws-api-client-67dd546754-xqbdn:~/client$ python3 client.py 
-
-List all jobs:
-GET http://uws-api-server:80/api/v1/job :
-HTTP code: 200
-[
-  {
-    &quot;jobId&quot;: &quot;a6b9043ef0c24170b019641da57a0dba&quot;,
-    &quot;runId&quot;: &quot;my-special-job&quot;,
-    &quot;ownerId&quot;: &quot;&quot;,
-    &quot;phase&quot;: &quot;completed&quot;,
-    &quot;creationTime&quot;: &quot;2021-03-17 20:58:00+00:00&quot;,
-    &quot;startTime&quot;: &quot;2021-03-17 20:58:00+00:00&quot;,
-    &quot;endTime&quot;: &quot;2021-03-17 20:58:13+00:00&quot;,
-    &quot;executionDuration&quot;: 13.0,
-    &quot;destruction&quot;: null,
-    &quot;parameters&quot;: {
-      &quot;command&quot;: [
-        &quot;/bin/bash&quot;,
-        &quot;-c&quot;,
-        &quot;cd /uws/jobs/a6b9043ef0c24170b019641da57a0dba/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt&quot;
-      ],
-      &quot;environment&quot;: [
-        {
-          &quot;name&quot;: &quot;DATA_DIR_COMCAM&quot;,
-          &quot;value&quot;: &quot;/data/lsstdata/comcam/oods/gen3butler/repo&quot;
-        },
-        {
-          &quot;name&quot;: &quot;DATA_DIR_AUXTEL&quot;,
-          &quot;value&quot;: &quot;/data/lsstdata/auxTel/oods/gen3butler/repo&quot;
-        },
-        {
-          &quot;name&quot;: &quot;JOB_SOURCE_DIR&quot;,
-          &quot;value&quot;: &quot;/uws/jobs/a6b9043ef0c24170b019641da57a0dba/src&quot;
-        },
-        {
-          &quot;name&quot;: &quot;SRC_GIT_URL&quot;,
-          &quot;value&quot;: &quot;https://github.com/lsst-dm/uws-api-server&quot;
-        },
-        {
-          &quot;name&quot;: &quot;GIT_COMMIT_REF&quot;,
-          &quot;value&quot;: null
-        },
-        {
-          &quot;name&quot;: &quot;JOB_OUTPUT_DIR&quot;,
-          &quot;value&quot;: &quot;/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out&quot;
-        }
-      ]
-    },
-    &quot;results&quot;: [
-      {
-        &quot;id&quot;: &quot;L3V3cy9qb2JzL2E2YjkwNDNlZjBjMjQxNzBiMDE5NjQxZGE1N2EwZGJhL291dC9kaXJsaXN0LnR4dA==&quot;,
-        &quot;uri&quot;: &quot;/uws/jobs/a6b9043ef0c24170b019641da57a0dba/out/dirlist.txt&quot;
-      }
-    ],
-    &quot;errorSummary&quot;: {
-      &quot;message&quot;: &quot;&quot;
-    },
-    &quot;jobInfo&quot;: {}
-  }
-]
-
-
-Create a job:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Create a job:
 PUT http://uws-api-server:80/api/v1/job :
 HTTP code: 200
 {
-  &quot;job_id&quot;: &quot;e13ed9f2803842409763b185d4f490e2&quot;,
+  &quot;job_id&quot;: &quot;acba01cb14bd48d585f5d0b3dc949cc8&quot;,
   &quot;api_response&quot;: null,
   &quot;message&quot;: null,
   &quot;status&quot;: &quot;ok&quot;
 }
 
 
-List jobs that are executing:
+List all jobs that are executing:
 GET http://uws-api-server:80/api/v1/job?phase=executing :
 HTTP code: 200
 [
   {
-    &quot;jobId&quot;: &quot;e13ed9f2803842409763b185d4f490e2&quot;,
-    &quot;runId&quot;: &quot;my-special-job&quot;,
+    &quot;jobId&quot;: &quot;acba01cb14bd48d585f5d0b3dc949cc8&quot;,
+    &quot;runId&quot;: &quot;hello-world&quot;,
     &quot;ownerId&quot;: &quot;&quot;,
     &quot;phase&quot;: &quot;executing&quot;,
-    &quot;creationTime&quot;: &quot;2021-03-17 20:58:54+00:00&quot;,
-    &quot;startTime&quot;: &quot;2021-03-17 20:58:54+00:00&quot;,
+    &quot;creationTime&quot;: &quot;2021-04-29 15:39:06+00:00&quot;,
+    &quot;startTime&quot;: &quot;2021-04-29 15:39:06+00:00&quot;,
     &quot;endTime&quot;: null,
     &quot;executionDuration&quot;: null,
     &quot;destruction&quot;: null,
@@ -303,20 +215,16 @@ HTTP code: 200
       &quot;command&quot;: [
         &quot;/bin/bash&quot;,
         &quot;-c&quot;,
-        &quot;cd /uws/jobs/e13ed9f2803842409763b185d4f490e2/src &amp;&amp; ls -l &gt; $JOB_OUTPUT_DIR/dirlist.txt&quot;
+        &quot;cd $JOB_SOURCE_DIR &amp;&amp; bash test/hello-world/hello-world.sh &gt; $JOB_OUTPUT_DIR/hello-world.log\n&quot;
       ],
       &quot;environment&quot;: [
         {
-          &quot;name&quot;: &quot;DATA_DIR_COMCAM&quot;,
-          &quot;value&quot;: &quot;/data/lsstdata/comcam/oods/butler/repo&quot;
-        },
-        {
-          &quot;name&quot;: &quot;DATA_DIR_AUXTEL&quot;,
-          &quot;value&quot;: &quot;/data/lsstdata/auxTel/oods/butler/repo&quot;
+          &quot;name&quot;: &quot;PROJECT_PATH&quot;,
+          &quot;value&quot;: &quot;/project/manninga/projects&quot;
         },
         {
           &quot;name&quot;: &quot;JOB_SOURCE_DIR&quot;,
-          &quot;value&quot;: &quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/src&quot;
+          &quot;value&quot;: &quot;/uws/jobs/acba01cb14bd48d585f5d0b3dc949cc8/src&quot;
         },
         {
           &quot;name&quot;: &quot;SRC_GIT_URL&quot;,
@@ -328,7 +236,19 @@ HTTP code: 200
         },
         {
           &quot;name&quot;: &quot;JOB_OUTPUT_DIR&quot;,
-          &quot;value&quot;: &quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/out&quot;
+          &quot;value&quot;: &quot;/uws/jobs/acba01cb14bd48d585f5d0b3dc949cc8/out&quot;
+        },
+        {
+          &quot;name&quot;: &quot;JOB_ID&quot;,
+          &quot;value&quot;: &quot;acba01cb14bd48d585f5d0b3dc949cc8&quot;
+        },
+        {
+          &quot;name&quot;: &quot;PROJECT_SUBPATH&quot;,
+          &quot;value&quot;: &quot;manninga/projects&quot;
+        },
+        {
+          &quot;name&quot;: &quot;CUSTOM_ENV_VAR&quot;,
+          &quot;value&quot;: &quot;Success!&quot;
         }
       ]
     },
@@ -341,53 +261,45 @@ HTTP code: 200
 ]
 
 
-Get the results for the job just created:
-GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
-HTTP code: 200
-&quot;executing&quot;
-
-...
-
-
-Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete...
-GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
+Get the phase of the job just created:
+GET /api/v1/job/acba01cb14bd48d585f5d0b3dc949cc8/phase :
 HTTP code: 200
 &quot;executing&quot;
 
 
-Job e13ed9f2803842409763b185d4f490e2 phase is executing. Waiting to complete...
-GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/phase :
+Job acba01cb14bd48d585f5d0b3dc949cc8 phase is executing. Waiting to complete...
+GET /api/v1/job/acba01cb14bd48d585f5d0b3dc949cc8/phase :
+HTTP code: 200
+&quot;executing&quot;
+
+
+Job acba01cb14bd48d585f5d0b3dc949cc8 phase is executing. Waiting to complete...
+GET /api/v1/job/acba01cb14bd48d585f5d0b3dc949cc8/phase :
 HTTP code: 200
 &quot;completed&quot;
 
 
 Job phase is completed.
 Fetching results...
-GET /api/v1/job/e13ed9f2803842409763b185d4f490e2/results :
+GET /api/v1/job/acba01cb14bd48d585f5d0b3dc949cc8/results :
 HTTP code: 200
 [
   {
-    &quot;id&quot;: &quot;L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==&quot;,
-    &quot;uri&quot;: &quot;/uws/jobs/e13ed9f2803842409763b185d4f490e2/out/dirlist.txt&quot;
+    &quot;id&quot;: &quot;L3V3cy9qb2JzL2FjYmEwMWNiMTRiZDQ4ZDU4NWY1ZDBiM2RjOTQ5Y2M4L291dC9oZWxsby13b3JsZC5sb2c=&quot;,
+    &quot;uri&quot;: &quot;/uws/jobs/acba01cb14bd48d585f5d0b3dc949cc8/out/hello-world.log&quot;
   }
 ]
 
 
-Download result file to &quot;./L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==&quot;.
-Contents of result file &quot;L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==&quot;:
-total 36
--rw-r--r-- 1 lsst lsst  653 Mar 17 20:59 Dockerfile
--rw-r--r-- 1 lsst lsst  436 Mar 17 20:59 Readme.rst
-drwxr-xr-x 2 lsst lsst   98 Mar 17 20:59 client
-drwxr-xr-x 4 lsst lsst  273 Mar 17 20:59 docs
--rw-r--r-- 1 lsst lsst  399 Mar 17 20:59 envvars.py
--rw-r--r-- 1 lsst lsst 1186 Mar 17 20:59 globals.py
--rwxr-xr-x 1 lsst lsst 1096 Mar 17 20:59 k8s_sync_client.sh
--rwxr-xr-x 1 lsst lsst 1096 Mar 17 20:59 k8s_sync_server.sh
--rwxr-xr-x 1 lsst lsst  383 Mar 17 20:59 launch_job_manager.sh
--rw-r--r-- 1 lsst lsst  142 Mar 17 20:59 requirements.txt
--rwxr-xr-x 1 lsst lsst  449 Mar 17 20:59 run_client.sh
-drwxr-xr-x 3 lsst lsst  212 Mar 17 20:59 server
+Download result file to &quot;./L3V3cy9qb2JzL2FjYmEwMWNiMTRiZDQ4ZDU4NWY1ZDBiM2RjOTQ5Y2M4L291dC9oZWxsby13b3JsZC5sb2c=&quot;.
+Contents of result file &quot;L3V3cy9qb2JzL2FjYmEwMWNiMTRiZDQ4ZDU4NWY1ZDBiM2RjOTQ5Y2M4L291dC9oZWxsby13b3JsZC5sb2c=&quot;:
+Custom environment variable: Success!
+Contents of project path &quot;/project/manninga/projects&quot; :
+total 2
+drwxr-xr-x 3 59214 202 4096 Apr 29 13:20 .
+drwxr-xr-x 3     0   0   22 Apr 29 15:39 ..
+drwxr-xr-x 3 59214 202 4096 Apr 29 13:20 test_gen3_discrete_skymap
+
 </pre></div>
 </div>
 </div>
