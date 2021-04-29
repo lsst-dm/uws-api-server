@@ -1,0 +1,115 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ name }}
+  namespace: {{ namespace }}
+spec:
+  completions: {{ replicas }}
+  parallelism: {{ replicas }}
+  backoffLimit: {{ backoffLimit }}
+  # activeDeadlineSeconds: {{ activeDeadlineSeconds }}
+  # Reference: https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs
+  #   "Note that this TTL mechanism is alpha, with feature gate TTLAfterFinished. 
+  #   For more information, see the documentation for TTL controller for 
+  #   finished resources."
+  # ttlSecondsAfterFinished: 30
+  template:
+    metadata:
+      labels:
+        type: "uws-job"
+        jobId: {{ jobId }}
+        runId: {{ runId }}
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 202
+      volumes:
+      - name: job-files
+        persistentVolumeClaim:
+          claimName: lsst-dm-scratch-pvc
+      - name: project-files
+        persistentVolumeClaim:
+          claimName: lsst-dm-projects-pvc
+      initContainers:
+      - name: {{ container_name }}-init
+        image: {{ image }}
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: job-files
+          mountPath: {{ uws_root_dir }}
+        env:
+          - name: "SRC_GIT_URL"
+            value: "{{ url }}"
+          - name: "GIT_COMMIT_REF"
+            value: "{{ commit_ref }}"
+          # The clone_dir is assumed to be a subfolder of uws_root_dir
+          - name: "GIT_CLONE_DIR"
+            value: "{{ clone_dir }}"
+          - name: "JOB_OUTPUT_DIR"
+            value: "{{ job_output_dir }}"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          mkdir -p "${JOB_OUTPUT_DIR}" && \
+        {% if clone_dir and url %}
+          git config --global user.name "UWS Job"  && \
+          git config --global user.email "fake@example.com"  && \
+          echo "Cloning git repo ${SRC_GIT_URL} to ${GIT_CLONE_DIR} ..." && \
+          git clone "${SRC_GIT_URL}" "${GIT_CLONE_DIR}" || echo "Git repo already present." && \
+          echo "Moving to ${GIT_CLONE_DIR}" and fetching updates ... && \
+          cd "${GIT_CLONE_DIR}" && \
+          git fetch -a && \
+          echo "Resetting to HEAD ..." && \
+          git reset --quiet --hard HEAD && \
+        {% if commit_ref %}
+          echo "Checking out reference ${GIT_COMMIT_REF} ..." && \
+          git checkout "${GIT_COMMIT_REF}" && \
+        {% endif %}
+          echo "Pulling latest commits ..." && \
+          git pull && \
+          echo "Git repo is ready."
+        {% endif %}
+          echo ""
+      containers:
+      - name: {{ container_name }}
+        image: {{ image }}
+        imagePullPolicy: IfNotPresent
+        command: 
+        - '/bin/bash'
+        - '-c'
+        - |
+          {{ command }}
+        env:
+          - name: "PROJECT_PATH"
+            value: "/project/{{ project_subpath }}"
+          {% if clone_dir %}
+          # The "JOB_SOURCE_DIR" provides the job script with the path to the location 
+          # of the cloned git repo (optional).
+          - name: "JOB_SOURCE_DIR"
+            value: "{{ clone_dir }}"
+          - name: "SRC_GIT_URL"
+            value: "{{ url }}"
+          - name: "GIT_COMMIT_REF"
+            value: "{{ commit_ref }}"
+          {% endif %}
+          # The "JOB_OUTPUT_DIR" provides the job script with the path to the output
+          # directory where the job results are expected to be stored.
+          - name: "JOB_OUTPUT_DIR"
+            value: "{{ job_output_dir }}"
+          # The "JOB_ID" provides the job script with the UUID associated with the job.
+          - name: "JOB_ID"
+            value: "{{ jobId }}"
+          # Custom environment variables are defined here if provided in the job creation request
+          {% for env in environment %}
+          - name: "{{ env.name }}"
+            value: "{{ env.value }}"
+          {% endfor %}
+        volumeMounts:
+        - name: job-files
+          mountPath: {{ uws_root_dir }}
+        - name: project-files
+          mountPath: "/project/{{ project_subpath }}"
+          subPath: "{{ project_subpath }}"
+          

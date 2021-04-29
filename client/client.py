@@ -101,30 +101,19 @@ if __name__ == '__main__':
     #     print(f'Deleting job {job["jobId"]}...')
     #     delete_job(job['jobId'])
     
-    # print('List all jobs:')
-    # list_jobs()
+    print('List all jobs:')
+    list_jobs()
+    
     print('Create a job:')
     # create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
     create_response = create_job(
-        run_id='pipetask-test',
-        command='bash test/pipetask/pipetask.sh', 
+        run_id='hello-world',
+        command='bash test/hello-world/hello-world.sh', 
         git_url='https://github.com/lsst-dm/uws-api-server',
         environment=[
             {
-                'name': 'CONFIG_OVERRIDES',
-                'value': '',
-            },
-            {
-                'name': 'BUTLER_CONFIG',
-                'value': '/repo/main',
-            },
-            {
-                'name': 'INPUT_COLLECTIONS',
-                'value': 'LATISS/raw/all,LATISS/calib',
-            },
-            {
-                'name': 'DATA_QUERY',
-                'value': 'exposure = 2021031100046',
+                'name': 'CUSTOM_ENV_VAR',
+                'value': 'Success!',
             },
         ]
     )

@@ -182,7 +182,13 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         else:
             clone_dir = None
         
-        with open(os.path.join(os.path.dirname(__file__), "job.tpl.yaml")) as f:
+        # If targeting NCSA Integration cluster
+        if globals.TARGET_CLUSTER == "int":
+            templateFile = "job.int.tpl.yaml"
+        # else assume targeting NCSA Test Stand environment
+        else:
+            templateFile = "job.tpl.yaml"
+        with open(os.path.join(os.path.dirname(__file__), templateFile)) as f:
             templateText = f.read()
         template = Template(templateText)
         job_body = yaml.safe_load(template.render(
@@ -206,6 +212,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             commit_ref=commit_ref if commit_ref else '',
             uws_root_dir=globals.UWS_ROOT_DIR,
             job_output_dir=job_output_dir,
+            project_subpath=globals.PROJECT_SUBPATH,
         ))
         log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(
