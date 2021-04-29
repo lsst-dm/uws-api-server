@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>This requirements file is used by the GitHub Actions Sphinx build system: https://github.com/ammaraskar/sphinx-action &mdash; UWS API Server  documentation</title>
+  <title>Kubernetes Deployment &mdash; UWS API Server  documentation</title>
   
 
   
@@ -155,14 +155,14 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>This requirements file is used by the GitHub Actions Sphinx build system: https://github.com/ammaraskar/sphinx-action</li>
+      <li>Kubernetes Deployment</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
             
-              <a href="https://github.com/lsst-dm/uws-api-server/blob/master/docs/requirements.txt" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/lsst-dm/uws-api-server/blob/master/docs/Kubernetes Deployment.md" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -176,10 +176,44 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="this-requirements-file-is-used-by-the-github-actions-sphinx-build-system-https-github-com-ammaraskar-sphinx-action">
-<h1>This requirements file is used by the GitHub Actions Sphinx build system: https://github.com/ammaraskar/sphinx-action<a class="headerlink" href="#this-requirements-file-is-used-by-the-github-actions-sphinx-build-system-https-github-com-ammaraskar-sphinx-action" title="Permalink to this headline">¶</a></h1>
-<p>sphinx_rtd_theme
-recommonmark</p>
+  <div class="section" id="kubernetes-deployment">
+<h1>Kubernetes Deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this headline">¶</a></h1>
+<p>The UWS currently supports deployment on the NCSA Test Stand (NTS) or the NCSA Integration cluster (“int”). The deployments are cluster-specific due to the GPFS and NFS persistent volumes that must be manually created by the sysadmin.</p>
+<div class="section" id="kubectl-access">
+<h2>kubectl access<a class="headerlink" href="#kubectl-access" title="Permalink to this headline">¶</a></h2>
+<p>A convenient method for accessing the Kubernetes cluster is described below. Create an SSH tunnel to the target Kubernetes API server using</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">L</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">6443</span><span class="p">:</span><span class="mf">141.142</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">Y</span><span class="p">:</span><span class="mi">6443</span> <span class="n">lsst</span><span class="o">-</span><span class="n">login</span><span class="o">.</span><span class="n">ncsa</span><span class="o">.</span><span class="n">illinois</span><span class="o">.</span><span class="n">edu</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">141.142.X.Y</span></code> is the IP address of the API server.</p>
+<p>Create a kubeconfig <code class="docutils literal notranslate"><span class="pre">$HOME/.kube/config.$TARGET_CLUSTER.proxy</span></code> using your existing kubeconfig as shown below, where the <code class="docutils literal notranslate"><span class="pre">insecure-skip-tls-verify:</span> <span class="pre">true</span></code> is necessary due to the SSH tunnel. Replace <code class="docutils literal notranslate"><span class="pre">$TARGET_CLUSTER</span></code> with the k8s cluster name, <code class="docutils literal notranslate"><span class="pre">$TARGET_NAMESPACE</span></code> with the deployment namespace on that cluster, and <code class="docutils literal notranslate"><span class="pre">$USERNAME</span></code> with your username.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>apiVersion: v1
+clusters:
+- cluster:
+    insecure-skip-tls-verify: true
+    server: https://127.0.0.1:6443
+  name: $TARGET_CLUSTER
+contexts:
+- context:
+    cluster: $TARGET_CLUSTER
+    namespace: $TARGET_NAMESPACE
+    user: $USERNAME
+  name: cluster-user@$TARGET_CLUSTER
+current-context: cluster-user@$TARGET_CLUSTER
+kind: Config
+preferences: {}
+users:
+- name: $USERNAME
+  user:
+    client-certificate-data: **********
+    client-key-data: **********
+</pre></div>
+</div>
+<p>Activate the kubeconfig prior to executing <code class="docutils literal notranslate"><span class="pre">helm</span></code> or <code class="docutils literal notranslate"><span class="pre">kubectl</span></code> with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">KUBECONFIG</span><span class="o">=</span><span class="s2">&quot;$HOME/.kube/config.$TARGET_CLUSTER.proxy&quot;</span>
+</pre></div>
+</div>
+</div>
 </div>
 
 

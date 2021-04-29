@@ -95,6 +95,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#file-editors-and-viewers">File editors and viewers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#development-environment">Development environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#source-code-sync-scripts">Source code sync scripts</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
@@ -251,6 +252,17 @@
 </pre></div>
 </div>
 <p>I logged in using a local terminal session and authenticated with my password and Duo 2FA. Subsequently I could browse remote files on <code class="docutils literal notranslate"><span class="pre">lsst-login</span></code> using Nautilus by opening <code class="docutils literal notranslate"><span class="pre">sftp://manninga&#64;lsst-login</span></code>.</p>
+</div>
+<div class="section" id="source-code-sync-scripts">
+<h2>Source code sync scripts<a class="headerlink" href="#source-code-sync-scripts" title="Permalink to this headline">¶</a></h2>
+<p>To rapidly iterate on code, use the sync scripts to push local files into the running containers. To update the UWS server, from this repo clone root deirectory, run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>./k8s_sync_server.sh $NAMESPACE
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">$NAMESPACE</span></code> is the name of the Kubernetes namespace in which the pod is deployed. Similarly to update the UWS client code use</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>./k8s_sync_client.sh $NAMESPACE
+</pre></div>
+</div>
 </div>
 </div>
 
