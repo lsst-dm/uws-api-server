@@ -79,3 +79,14 @@ I added the following to a new file ``~/.ssh/config``::
     HostName lsst-login03.ncsa.illinois.edu
 
 I logged in using a local terminal session and authenticated with my password and Duo 2FA. Subsequently I could browse remote files on ``lsst-login`` using Nautilus by opening ``sftp://manninga@lsst-login``.
+
+Source code sync scripts
+----------------------------------------
+
+To rapidly iterate on code, use the sync scripts to push local files into the running containers. To update the UWS server, from this repo clone root deirectory, run ::
+
+  ./k8s_sync_server.sh $NAMESPACE
+  
+where ``$NAMESPACE`` is the name of the Kubernetes namespace in which the pod is deployed. Similarly to update the UWS client code use ::
+
+  ./k8s_sync_client.sh $NAMESPACE
