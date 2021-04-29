@@ -178,7 +178,23 @@
             
   <div class="section" id="kubernetes-deployment">
 <h1>Kubernetes Deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this headline">¶</a></h1>
-<p>The UWS currently supports deployment on the NCSA Test Stand (NTS) or the NCSA Integration cluster (“int”). The deployments are cluster-specific due to the GPFS and NFS persistent volumes that must be manually created by the sysadmin.</p>
+<p>The UWS currently supports deployment on the NCSA Test Stand (NTS) or the NCSA Integration cluster (INT). The deployments are cluster-specific due to the GPFS and NFS persistent volumes that must be manually created by the sysadmin.</p>
+<div class="section" id="persistent-volumes">
+<h2>Persistent Volumes<a class="headerlink" href="#persistent-volumes" title="Permalink to this headline">¶</a></h2>
+<p>INT cluster:</p>
+<p>|PVC name             |Mount point                                         |
+|:——————–|:—————————————————|
+|nfs-scratch-pvc     |<code class="docutils literal notranslate"><span class="pre">/scratch/uws</span> </code>                                      |
+|nfs-data-pvc        |<code class="docutils literal notranslate"><span class="pre">/offline/teststand</span>&#160;&#160;&#160;&#160; </code>                            |
+|nfs-oods-comcam-pvc |<code class="docutils literal notranslate"><span class="pre">/data/lsstdata/NTS/comcam/oods/gen3butler/repo</span>&#160;&#160;&#160;&#160; </code>|
+|nfs-oods-auxtel-pvc |<code class="docutils literal notranslate"><span class="pre">/data/lsstdata/NTS/auxTel/oods/gen3butler/repo</span>&#160;&#160;&#160;&#160; </code>|</p>
+<p>NTS cluster:</p>
+<p>|PVC name             |Mount point    |
+|:——————–|:————–|
+|lsst-dm-scratch-pvc  |<code class="docutils literal notranslate"><span class="pre">/scratch/uws</span> </code>|
+|lsst-dm-projects-pvc |<code class="docutils literal notranslate"><span class="pre">/project</span>&#160;&#160;&#160;&#160; </code>|
+|lsst-dm-repo-pvc     |<code class="docutils literal notranslate"><span class="pre">/repo</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; </code>|</p>
+</div>
 <div class="section" id="kubectl-access">
 <h2>kubectl access<a class="headerlink" href="#kubectl-access" title="Permalink to this headline">¶</a></h2>
 <p>A convenient method for accessing the Kubernetes cluster is described below. Create an SSH tunnel to the target Kubernetes API server using</p>
@@ -213,6 +229,17 @@ users:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">KUBECONFIG</span><span class="o">=</span><span class="s2">&quot;$HOME/.kube/config.$TARGET_CLUSTER.proxy&quot;</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="helm-chart-installation">
+<h2>Helm chart installation<a class="headerlink" href="#helm-chart-installation" title="Permalink to this headline">¶</a></h2>
+<p>The Helm chart for <code class="docutils literal notranslate"><span class="pre">uws-api-server</span></code> is in the Helm repo https://lsst-dm.github.io/charts/ (see that page for instructions on how to add the Helm repo and its charts).</p>
+<p>During development, you can clone the source repo (https://github.com/lsst-dm/charts/) and install with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>helm upgrade --install -n $NAMESPACE \
+  uws-api-server charts/uws-api-server/ \
+  --values charts/uws-api-server/values-$CLUSTER.yaml 
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">values-$CLUSTER.yaml</span></code> is the values file specific to the target cluster.</p>
 </div>
 </div>
 

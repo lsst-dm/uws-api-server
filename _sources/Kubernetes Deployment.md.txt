@@ -1,7 +1,27 @@
 Kubernetes Deployment
 ======================================
 
-The UWS currently supports deployment on the NCSA Test Stand (NTS) or the NCSA Integration cluster ("int"). The deployments are cluster-specific due to the GPFS and NFS persistent volumes that must be manually created by the sysadmin.
+The UWS currently supports deployment on the NCSA Test Stand (NTS) or the NCSA Integration cluster (INT). The deployments are cluster-specific due to the GPFS and NFS persistent volumes that must be manually created by the sysadmin.
+
+Persistent Volumes
+------------------------------
+
+INT cluster:
+
+|PVC name             |Mount point                                         |
+|:--------------------|:---------------------------------------------------|
+|nfs-scratch-pvc     |`/scratch/uws `                                      |
+|nfs-data-pvc        |`/offline/teststand     `                            |
+|nfs-oods-comcam-pvc |`/data/lsstdata/NTS/comcam/oods/gen3butler/repo     `|
+|nfs-oods-auxtel-pvc |`/data/lsstdata/NTS/auxTel/oods/gen3butler/repo     `|
+
+NTS cluster:
+
+|PVC name             |Mount point    |
+|:--------------------|:--------------|
+|lsst-dm-scratch-pvc  |`/scratch/uws `|
+|lsst-dm-projects-pvc |`/project     `|
+|lsst-dm-repo-pvc     |`/repo        `|
 
 kubectl access
 ------------------------------
@@ -41,3 +61,16 @@ Activate the kubeconfig prior to executing `helm` or `kubectl` with:
 export KUBECONFIG="$HOME/.kube/config.$TARGET_CLUSTER.proxy"
 ```
 
+Helm chart installation
+---------------------------
+
+The Helm chart for `uws-api-server` is in the Helm repo https://lsst-dm.github.io/charts/ (see that page for instructions on how to add the Helm repo and its charts).
+
+During development, you can clone the source repo (https://github.com/lsst-dm/charts/) and install with 
+```
+helm upgrade --install -n $NAMESPACE \
+  uws-api-server charts/uws-api-server/ \
+  --values charts/uws-api-server/values-$CLUSTER.yaml 
+```
+
+where `values-$CLUSTER.yaml` is the values file specific to the target cluster.
