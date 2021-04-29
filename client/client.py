@@ -108,7 +108,7 @@ if __name__ == '__main__':
     # create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
     create_response = create_job(
         run_id='hello-world',
-        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh', 
+        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh > $JOB_OUTPUT_DIR/hello-world.log', 
         git_url='https://github.com/lsst-dm/uws-api-server',
         environment=[
             {
@@ -122,21 +122,25 @@ if __name__ == '__main__':
         ]
     )
     job_id = create_response.json()['job_id']
+    
     print('List jobs that are executing:')
     list_jobs(phase='executing')
-    print('Get the results for the job just created:')
+    
+    print('Get the phase of the job just created:')
     job_phase = get_job(job_id, property='phase').json()
     while job_phase in ['pending', 'queued', 'executing']:
         print(f'Job {job_id} phase is {job_phase}. Waiting to complete...')
         time.sleep(3)
         job_phase = get_job(job_id, property='phase').json()
     print(f'Job phase is {job_phase}.')
-    # if job_phase == 'completed':
-    #     print('Fetching results...')
-    #     results = get_job(job_id, property='results').json()
-    #     for result in results:
-    #         downloaded_file = get_result(result_id=result['id'])
-    #         if downloaded_file:
-    #             print(f'Contents of result file "{downloaded_file}":')
-    #             with open(downloaded_file, 'r') as dfile:
-    #                 print(dfile.read())
+    
+    # Show output files
+    if job_phase == 'completed':
+        print('Fetching results...')
+        results = get_job(job_id, property='results').json()
+        for result in results:
+            downloaded_file = get_result(result_id=result['id'])
+            if downloaded_file:
+                print(f'Contents of result file "{downloaded_file}":')
+                with open(downloaded_file, 'r') as dfile:
+                    print(dfile.read())
