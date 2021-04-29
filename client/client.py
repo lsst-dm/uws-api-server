@@ -108,7 +108,7 @@ if __name__ == '__main__':
     # create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
     create_response = create_job(
         run_id='hello-world',
-        command='bash test/hello-world/hello-world.sh', 
+        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh', 
         git_url='https://github.com/lsst-dm/uws-api-server',
         environment=[
             {
