@@ -133,9 +133,9 @@ def construct_job_object(job_info):
         
         results = []
         try:
-            for filepath in job_info['output_files']:
+            for idx, filepath in enumerate(job_info['output_files']):
                 results.append({
-                    'id': str(base64.b64encode(bytes(filepath, 'utf-8')), 'utf-8'),
+                    'id': idx,
                     'uri': filepath,
                     # 'mime-type': 'image/fits',
                     # 'size': '3000960',
@@ -311,20 +311,22 @@ class JobHandler(BaseHandler):
         
 
 class ResultFileHandler(BaseHandler):
-    def get(self, result_id=None):
+    def get(self, job_id=None, result_id=None):
         try:
-            # # If a job_id is provided but it is invalid, then the request is malformed:
-            # if not valid_job_id(job_id):
-            #     self.send_response('Invalid job ID.', http_status_code=global_vars.HTTP_BAD_REQUEST, indent=2)
-            #     self.finish()
-            #     return
+            # If a job_id is provided but it is invalid, then the request is malformed:
+            if not valid_job_id(job_id):
+                self.send_response('Invalid job ID.', http_status_code=global_vars.HTTP_BAD_REQUEST, indent=2)
+                self.finish()
+                return
             # If a result_id is not provided, then the request is malformed:
             if not result_id:
                 self.send_response('Invalid result ID.', http_status_code=global_vars.HTTP_BAD_REQUEST, indent=2)
                 self.finish()
                 return
             try:
-                file_path = str(base64.b64decode(bytes(result_id, 'utf-8')), 'utf-8')
+                result_idx = int(result_id)
+                job_files = kubejob.list_job_output_files(job_id)
+                file_path = job_files[result_idx]
             except:
                 self.send_response('Result file not found.', http_status_code=global_vars.HTTP_NOT_FOUND, return_json=False)
                 self.finish()
@@ -333,11 +335,12 @@ class ResultFileHandler(BaseHandler):
                 self.send_response('Result file not found.', http_status_code=global_vars.HTTP_NOT_FOUND, return_json=False)
                 self.finish()
                 return
+            # TODO: Consider applying "application/octet-stream" universally given the error rate with the guess_type() function
             content_type, _ = guess_type(file_path)
             if not content_type:
                 content_type = "application/octet-stream"
             self.add_header('Content-Type', content_type)
-            with open(file_path) as source_file:
+            with open(file_path, 'rb') as source_file:
                 self.send_response(source_file.read(), return_json=False)
                 self.finish()
                 return
@@ -354,7 +357,7 @@ def make_app(base_path=''):
     settings = {"debug": True}
     return tornado.web.Application(
         [
-            (r"{}/job/result/(.*)".format(base_path), ResultFileHandler),
+            (r"{}/job/result/(.*)/(.*)".format(base_path), ResultFileHandler),
             (r"{}/job/(.*)/(.*)".format(base_path), JobHandler),
             (r"{}/job/(.*)".format(base_path), JobHandler),
             (r"{}/job".format(base_path), JobHandler),

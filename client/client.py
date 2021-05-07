@@ -8,8 +8,8 @@ config = {
 }
 
 
-def get_result(result_id=''):
-    url = f'{config["apiBaseUrl"]}/job/result/{result_id}'
+def get_result(job_id=None, result_id=''):
+    url = f'{config["apiBaseUrl"]}/job/result/{job_id}/{result_id}'
     try:
         local_filename = url.split('/')[-1]
         # NOTE the stream=True parameter below
@@ -107,8 +107,8 @@ if __name__ == '__main__':
     print('Create a job:')
     # create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
     create_response = create_job(
-        run_id='hello-world',
-        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh > $JOB_OUTPUT_DIR/hello-world.log', 
+        run_id='andrew',
+        command='cd $JOB_SOURCE_DIR && mkdir $JOB_OUTPUT_DIR/subdir1 && mkdir $JOB_OUTPUT_DIR/subdir2 && bash test/hello-world/hello-world.sh | tee $JOB_OUTPUT_DIR/hello-world.log | tee $JOB_OUTPUT_DIR/subdir1/hello-world.log | tee $JOB_OUTPUT_DIR/subdir2/hello-world.log', 
         git_url='https://github.com/lsst-dm/uws-api-server',
         environment=[
             {
@@ -139,7 +139,7 @@ if __name__ == '__main__':
         print('Fetching results...')
         results = get_job(job_id, property='results').json()
         for result in results:
-            downloaded_file = get_result(result_id=result['id'])
+            downloaded_file = get_result(job_id=job_id, result_id=result['id'])
             if downloaded_file:
                 print(f'Contents of result file "{downloaded_file}":')
                 with open(downloaded_file, 'r') as dfile:
