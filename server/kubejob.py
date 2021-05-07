@@ -56,11 +56,12 @@ def list_job_output_files(job_id):
     try:
         job_output_dir = os.path.join(get_job_root_dir_from_id(job_id), 'out')
         if os.path.isdir(job_output_dir):
-            with os.scandir(job_output_dir) as dirscan:
-                for entry in dirscan:
-                    if not entry.name.startswith('.') and entry.is_file():
-                        job_filepaths.append(entry.path)
-                        log.debug(entry.path)
+            for dirpath, dirnames, filenames in os.walk(job_output_dir):
+                for filename in filenames:
+                    filepath = os.path.join(dirpath, filename)
+                    if not filename.startswith('.') and os.path.isfile(filepath):
+                        job_filepaths.append(filepath)
+                        log.debug(filepath)
     except Exception as e:
         log.error(str(e))
         raise e
