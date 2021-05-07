@@ -33,7 +33,7 @@ spec:
           claimName: lsst-dm-projects-pvc
       initContainers:
       - name: {{ container_name }}-init
-        image: {{ image }}
+        image: {{ image.repository }}:{{ image.tag }}
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: job-files
@@ -74,7 +74,7 @@ spec:
           echo ""
       containers:
       - name: {{ container_name }}
-        image: {{ image }}
+        image: {{ image.repository }}:{{ image.tag }}
         imagePullPolicy: IfNotPresent
         command: 
         - '/bin/bash'

@@ -184,6 +184,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             clone_dir = None
         
         project_subpath = global_vars.PROJECT_SUBPATH
+        image_tag = 'd_latest'
         # If targeting NCSA Integration cluster
         if global_vars.TARGET_CLUSTER == "int":
             templateFile = "job.int.tpl.yaml"
@@ -193,6 +194,8 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             for envvar in environment:
                 if envvar['name'] == 'PROJECT_SUBPATH':
                     project_subpath = envvar['value']
+                if envvar['name'] == 'JOB_IMAGE_TAG':
+                    image_tag = envvar['value']
             # If not a valid subdirectory of /project, return with error message
             assert os.path.isdir(f'/project/{project_subpath}')
         # else assume targeting NCSA Test Stand environment
@@ -215,7 +218,10 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             #          will create permissions problems. For example, if the job UID is 1001 and
             #          the server UID is 1000, then files created by the job will not in general 
             #          allow the server to delete them when cleaning up deleted jobs.
-            image='lsstsqre/centos:d_latest',
+            image={
+                'repository': 'lsstsqre/centos',
+                'tag': image_tag,
+            },
             command=command,
             environment=environment,
             url=url if url else '',
