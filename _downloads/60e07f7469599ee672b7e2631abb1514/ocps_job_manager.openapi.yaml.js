@@ -5,17 +5,43 @@ openapi: 3.0.1
 info:
   title: OCS Universal Worker Service API
   description: "Rubin OCS Universal Worker Service API"
-  version: 0.1.0
-# servers:
-# - url: /api/v1/
-#   description: API endpoint base path
+  version: 1.0.0
+servers:
+- url: /api/v1/
+  description: API endpoint base path
 tags:
 - name: Jobs
   description: Manage jobs
-- name: Schemas
-  description: Manage job schemas
 paths:
   /job:
+    get:
+      tags:
+      - Jobs
+      summary: Fetch a list of jobs
+      operationId: listJobs
+      parameters:
+      - in: query
+        name: phase
+        required: false
+        description: >
+            List jobs in a specific phase.
+        schema:
+          $ref: '#/components/schemas/ListJobPhases'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListJobResponse"
+        "400":
+          description: Invalid category supplied
+        "500":
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericServerError"
     put:
       tags:
       - Jobs
@@ -24,9 +50,7 @@ paths:
       operationId: newJob
       requestBody:
         description: |
-          **Job specification**
-
-          The schema of the \`config\` property of the job specification is variable; it depends on the job type and that type's associated schema. The structure of the \`config\` property is defined by the schema, which can be fetched via [GET /schema/{job_type}](#/Schemas/getSchema)
+          Job specification
         content:
           application/json:
             schema:
@@ -51,8 +75,8 @@ paths:
     get:
       tags:
       - Jobs
-      summary: Request status of an existing job
-      operationId: listJobs
+      summary: Fetch the details of a specific job
+      operationId: getJob
       parameters:
       - name: job_id
         in: path
@@ -80,7 +104,7 @@ paths:
     delete:
       tags:
       - Jobs
-      summary: Delete an existing job
+      summary: Delete a job
       description: ""
       operationId: deleteJob
       parameters:
@@ -103,81 +127,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GenericServerError"
-  "/job/list/{category}":
+  "/job/{job_id}/{property}":
     get:
       tags:
       - Jobs
-      summary: Fetch a list of submitted jobs
-      operationId: statusJob
+      summary: Fetch specific property of an existing job
+      operationId: getJobProperty
       parameters:
-      - in: path
-        name: category
-        required: true
-        description: >
-            What jobs to list:
-             * \`all\` - All jobs
-             * \`complete\` - Completed jobs
-             * \`pending\` - Pending jobs
-             * \`running\` - Running jobs
-        schema:
-          $ref: '#/components/schemas/ListJobCategories'
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListJobResponse"
-        "400":
-          description: Invalid category supplied
-        "500":
-          description: error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GenericServerError"
-  /schema/all:
-    get:
-      tags:
-      - Schemas
-      summary: Get the schemas for all job types
-      operationId: getAllSchema
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListSchemaAllResponse'
-        "500":
-          description: error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GenericServerError"
-  "/schema/{job_type}":
-    get:
-      tags:
-      - Schemas
-      summary: Get the schema for one or all job types
-      operationId: getSchema
-      parameters:
-      - name: job_type
+      - name: job_id
         in: path
-        description: Name of job type. 
-        required: false
+        description: ID of job to return
+        required: true
         schema:
           type: string
-          example: "ap"
+      - name: property
+        in: path
+        required: true
+        description: Fetch a specific property of a job
+        schema:
+          $ref: '#/components/schemas/JobProperty'
       responses:
         "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListSchemaResponse'
+                $ref: "#/components/schemas/JobPropertyValue"
+        "400":
+          description: Invalid ID or property supplied
         "404":
-          description: Schema for job type not found.
+          description: Job not found
         "500":
           description: error
           content:
@@ -186,73 +165,6 @@ paths:
                 $ref: "#/components/schemas/GenericServerError"
 components:
   schemas:
-    ListSchemaResponse:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Name of job type
-          example: "pipeline"
-        repo_url:
-          type: string
-          description: URL of git repo containing the script to be executed 
-          example: "https://example.com/org/reponame.git"
-        version:
-          type: string
-          description: Latest stable version (obey semantic versioning spec)
-          example: "v2.5.1"
-        config:
-          type: string
-          description: YAML-formatted, descriptive example of configuration data structure specific to the job type
-          example: |
-            # Name of pipeline to run
-            name:
-            # Version of pipeline to run
-            version:
-            # Config overrides. A list of key=value entries, that become -c key=value arguments to pipetask
-            config_overrides:
-            - key: keyname1
-              val: val1
-            - key: keyname2
-              val: val2
-            # Filename overrides that become -C filename arguments to pipetask. Any config filenames are in the same git repo with the same ref as the pipeline YAML.
-            filenames:
-              - filename1
-              - filename2
-            # Data selection expression. An expression that is passed as -d query to pipetask.
-            data_query: |
-              SELECT * FROM DATA_TABLE;
-        env:
-          type: array
-          description: Environment variables
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-                description: Name of environment variable
-                example: "IMG_SIZE"
-              units:
-                type: string
-                description: Units of environment variable value
-                example: "arcminutes"
-              default:
-                type: string
-                description: Default value of environment variable
-                example: "1.0"
-              min:
-                type: string
-                description: Minimum value of environment variable (if applicable)
-                example: "0.1"
-              max:
-                type: string
-                description: Maximum value of environment variable (if applicable)
-                example: "12.0"
-        # TODO: how to describe dynamic object properties?
-    ListSchemaAllResponse:
-      type: array
-      items:
-        $ref: "#/components/schemas/ListSchemaResponse"
     GenericServerError:
       type: object
       properties:
@@ -260,59 +172,120 @@ components:
           type: string
           description: Explanation of error
           example: "Error due to XYZ"
-    ListJobCategories:
-      type: string
-      enum:
-      - "all"
-      - "completed"
-      - "pending"
-      - "running"
-      - "null"
-    ListJobResponse:
+    GetJob:
       type: object
       properties:
-        job_ids:
+        jobId:
+          type: string
+          description: Job ID
+          example: "51871bb0015c4b49bf5dcf4011d99975"
+        runId:
+          type: string
+          description: Optional non-unique label attached to job
+          example: "astro-job"
+        phase:
+          type: string
+          description: Job phase
+          example: "executing"
+        creationTime:
+          type: string
+          description: Job creation time
+          example: "2021-04-29 15:39:06+00:00"
+        startTime:
+          type: string
+          description: Job execution start time
+          example: "2021-04-29 15:39:09+00:00"
+        endTime:
+          type: string
+          description: Job completion time
+          example: "2021-04-29 15:41:06+00:00"
+        destruction:
+          type: string
+          description: Job destruction time (not implemented)
+          example: "2021-04-29 15:41:06+00:00"
+        executionDuration:
+          type: integer
+          description: Job duration in seconds
+          example: "543"
+        parameters:
+          $ref: '#/components/schemas/JobParameters'
+        results:
+          $ref: '#/components/schemas/JobResults'
+    JobParameters:
+      type: object
+      description: Input parameter values.
+      properties:
+        command:
           type: array
-          description: List of job IDs
+          description: Command to execute 
           items:
             type: string
-            description: job ID
-            example: "c2c5484c22a8434aa301e4f56d17d595"
+            example: 
+            - /bin/sh
+            - -c
+            - sleep 1d
+    JobResults:
+      type: array
+      description: Job output files
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            description: Result ID associated with one output file
+            example: 0
+          uri:
+            type: string
+            description: Relative path of an output file
+            example: /uws/jobs/3151ec18cace4bf0946b95e958c0edc6/out/my_file.dat
+    JobProperty:
+      type: string
+      description: Job property to fetch
+      enum:
+      - 'results'
+      - 'phase'
+      - 'parameters'
+    JobPropertyValue:
+      oneOf:
+      - $ref: "#/components/schemas/ListJobPhases"
+      - $ref: "#/components/schemas/JobResults"
+      - $ref: "#/components/schemas/JobParameters"
+    ListJobPhases:
+      type: string
+      enum:
+      - 'pending'
+      - 'queued'
+      - 'executing'
+      - 'completed'
+      - 'error'
+      - 'unknown'
+      - 'held'
+      - 'suspended'
+      - 'aborted'
+    ListJobResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/GetJob'
     PutJob:
       type: object
       properties:
-        type:
+        run_id:
           type: string
-          description: Job type
-          example: "pipeline"
-        version:
+          description: Optional label for job. Does not need to be unique.
+          example: "astro-job"
+        command:
           type: string
-          description: Version of the job executable to run
-          example: "v2.1.0"
-        config:
-          type: object
-          description: Configuration specific to target job type
-          # TODO: Should the input config be YAML-formatted text instead?
-          example: {
-              "name": "DiaPipelineTask",
-              "version": "v20.0.0",
-              "config_overrides": [
-                  {
-                    "key": "firstname",
-                    "val": "john"
-                  },
-                  {
-                    "key": "lastname",
-                    "val": "smith"
-                  }
-                ],
-              "filenames": [
-                "filename1",
-                "filename2"
-              ],
-              "data_query": "SELECT * FROM DATA_TABLE;"
-            }
-        env:
+          description: Command to execute in the bash shell
+          example: "sleep 30"
+        url:
+          type: string
+          description: Git repo URL to clone for source code
+          example: "https://gitlab.com/lsst-dm/example-repo"
+        commit_ref:
+          type: string
+          description: Git repo ref (e.g. branch name, tag, commit hash)
+          example: "78494ed"
+        environment:
           type: array
           description: Environment variables and values
           items:
@@ -321,11 +294,11 @@ components:
               name:
                 type: string
                 description: Name of environment variable
-                example: "IMG_SIZE"
+                example: "PROJECT_PATH"
               value:
                 type: string
                 description: Value of environment variable
-                example: "2.5"
+                example: "username/projects"
     PutJobResponse:
       type: object
       properties:
@@ -333,59 +306,17 @@ components:
           type: string
           description: UUID of new job
           example: "c2c5484c22a8434aa301e4f56d17d595"
-    GetJob:
-      type: object
-      properties:
+        api_response:
+          type: string
+          description: Response message from the Kubernetes Job creation API
+          example: ""
+        message:
+          type: string
+          description: Error message if an error occurs
+          example: ""
         status:
           type: string
-          description: Job fetch status
+          description: Success or failure of job creation
           example: "ok"
-        msg:
-          type: string
-          description: Job fetch message
-          example: ""
-        job:
-          type: object
-          description: Information about the requested job
-          properties:
-            clusterId:
-              type: string
-              description: ID of HTCondor cluster assigned
-              example: abc123
-            state:
-              type: string
-              description: State of the job
-              example: running
-            type:
-              type: string
-              description: Job type
-              example: "pipeline"
-            input:
-              type: object
-              description: Input parameter values. Schema depends on job type.
-              properties:
-                EXAMPLE_PARAM:
-                  type: string
-                  description: Example of an environment variable EXAMPLE_PARAM
-                  example: "Example of an environment variable EXAMPLE_PARAM"
-            output:
-              type: object
-              description: Job output data
-              properties:
-                urls:
-                  type: array
-                  description: URLs to output data files
-                  items:
-                    type: string
-                    description: Output data file URL
-                    example: "https://example.com/path/to/file.dat"
-                data:
-                  type: object
-                  description: Direct output data/information. Schema depends on job type.
-                  properties:
-                    EXAMPLE:
-                      type: string
-                      description: Example parameter returned by the job
-                      example: "Example value returned by the job"
 ################################################################################
 `;
