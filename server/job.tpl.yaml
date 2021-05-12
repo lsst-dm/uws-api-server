@@ -37,6 +37,9 @@ spec:
       - name: repo
         persistentVolumeClaim:
           claimName: {{ repo_pvc }}
+      - name: project-files
+        persistentVolumeClaim:
+          claimName: {{ project_pvc }}
       - name: nfs-oods-comcam
         persistentVolumeClaim:
           claimName: {{ oods_comcam_pvc }}
@@ -141,6 +144,9 @@ spec:
           {% if target_cluster == "nts" %}
         - name: repo
           mountPath: /repo
+        - name: project-files
+          mountPath: "/project/{{ project_subpath }}"
+          subPath: "{{ project_subpath }}"
         - name: data
           mountPath: /lsstdata/offline/teststand
           readOnly: true
