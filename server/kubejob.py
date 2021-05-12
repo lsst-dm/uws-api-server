@@ -229,6 +229,10 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             uws_root_dir=global_vars.UWS_ROOT_DIR,
             job_output_dir=job_output_dir,
             project_subpath=project_subpath,
+            job_files_pvc=f'{os.environ["API_DOMAIN"]}-nfs-scratch-pvc',
+            data_pvc=f'{os.environ["API_DOMAIN"]}-nfs-data-pvc',
+            oods_comcam_pvc=f'{os.environ["API_DOMAIN"]}-nfs-oods-comcam-pvc',
+            oods_auxtel_pvc=f'{os.environ["API_DOMAIN"]}-nfs-oods-auxtel-pvc',
         ))
         log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(

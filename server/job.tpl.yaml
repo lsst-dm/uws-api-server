@@ -30,16 +30,16 @@ spec:
       {% if target_cluster == "nts" %}
       - name: job-files
         persistentVolumeClaim:
-          claimName: nfs-scratch-pvc
+          claimName: {{ job_files_pvc }}
       - name: data
         persistentVolumeClaim:
-          claimName: nfs-data-pvc
+          claimName: {{ data_pvc }}
       - name: nfs-oods-comcam
         persistentVolumeClaim:
-          claimName: nfs-oods-comcam-pvc
+          claimName: {{ oods_comcam_pvc }}
       - name: nfs-oods-auxtel
         persistentVolumeClaim:
-          claimName: nfs-oods-auxtel-pvc
+          claimName: {{ oods_auxtel_pvc }}
       {% elif target_cluster == "int" %}
       - name: job-files
         persistentVolumeClaim:
