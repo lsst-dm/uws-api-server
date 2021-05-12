@@ -184,7 +184,7 @@ class JobHandler(BaseHandler):
             #   - https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#runId
             #   - https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
             run_id = self.getarg('run_id', default='') # optional
-            if run_id and (run_id != re.sub(r'[^-._a-zA-Z0-9]', "", run_id) or not re.match(r'[a-zA-Z0-9]', run_id)):
+            if run_id and (not isinstance(run_id, str) or run_id != re.sub(r'[^-._a-zA-Z0-9]', "", run_id) or not re.match(r'[a-zA-Z0-9]', run_id)):
                 self.send_response('Invalid run_id. Must be 63 characters or less and begin with alphanumeric character and contain only dashes (-), underscores (_), dots (.), and alphanumerics between.', http_status_code=global_vars.HTTP_BAD_REQUEST, return_json=False)
                 self.finish()
                 return
@@ -197,7 +197,8 @@ class JobHandler(BaseHandler):
             url = self.getarg('url', default='') # optional
             # The git reference (branch name or commit hash) to be checked out after cloning the git repo
             commit_ref = self.getarg('commit_ref', default='') # optional
-        except:
+        except Exception as e:
+            self.send_response(str(e), http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
             self.finish()
             return
         response = kubejob.create_job(
