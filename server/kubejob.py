@@ -236,6 +236,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             data_pvc=f'{os.environ["API_DOMAIN"]}-nfs-data-pvc',
             oods_comcam_pvc=f'{os.environ["API_DOMAIN"]}-nfs-oods-comcam-pvc',
             oods_auxtel_pvc=f'{os.environ["API_DOMAIN"]}-nfs-oods-auxtel-pvc',
+            repo_pvc=f'{os.environ["API_DOMAIN"]}-repo-pvc',
         ))
         log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(
