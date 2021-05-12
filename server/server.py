@@ -214,8 +214,16 @@ class JobHandler(BaseHandler):
             self.send_response(response['message'], http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
             self.finish()
             return
-        else:
-            self.send_response(response, indent=2)
+        try:
+            results = kubejob.list_jobs(
+                job_id=response['job_id'],
+            )
+            job = construct_job_object(results['jobs'][0])
+            self.send_response(job, indent=2)
+            self.finish()
+            return
+        except Exception as e:
+            self.send_response(str(e), http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
             self.finish()
             return
         

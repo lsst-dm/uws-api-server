@@ -121,7 +121,7 @@ if __name__ == '__main__':
             },
         ]
     )
-    job_id = create_response.json()['job_id']
+    job_id = create_response.json()['jobId']
     
     print('List jobs that are executing:')
     list_jobs(phase='executing')
