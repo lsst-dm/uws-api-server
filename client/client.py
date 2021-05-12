@@ -98,26 +98,44 @@ if __name__ == '__main__':
     
     # # DELETE ALL JOBS AND JOB FILES:
     # for job in list_jobs().json():
-    #     print(f'Deleting job {job["jobId"]}...')
-    #     delete_job(job['jobId'])
+    #     # if job['runId'] == '12345678':
+    #         print(f'Deleting job {job["jobId"]}...')
+    #         delete_job(job['jobId'])
     
-    print('List all jobs:')
-    list_jobs()
-    
+    # print('List all jobs:')
+    # list_jobs()
+    # import sys
+    # sys.exit(0)
     print('Create a job:')
     # create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
     create_response = create_job(
-        run_id='andrew',
-        command='cd $JOB_SOURCE_DIR && mkdir $JOB_OUTPUT_DIR/subdir1 && mkdir $JOB_OUTPUT_DIR/subdir2 && bash test/hello-world/hello-world.sh | tee $JOB_OUTPUT_DIR/hello-world.log | tee $JOB_OUTPUT_DIR/subdir1/hello-world.log | tee $JOB_OUTPUT_DIR/subdir2/hello-world.log', 
-        git_url='https://github.com/lsst-dm/uws-api-server',
+        run_id='andrew-1047308558',
+        command='cd $JOB_SOURCE_DIR && bash bin/pipetask.sh', 
+        git_url='https://github.com/lsst-dm/uws_scripts',
         environment=[
             {
-                'name': 'PROJECT_SUBPATH',
-                'value': 'manninga/projects',
+            "name": "EUPS_TAG",
+            "value": ""
             },
             {
-                'name': 'CUSTOM_ENV_VAR',
-                'value': 'Success!',
+            "name": "PIPELINE_URL",
+            "value": "$OBS_LSST_DIR/pipelines/DRP.yaml#isr"
+            },
+            {
+            "name": "BUTLER_REPO",
+            "value": "/repo/LSSTComCam"
+            },
+            {
+            "name": "RUN_OPTIONS",
+            "value": "-i LSSTComCam/defaults,LSSTComCam/raw/all "
+            },
+            {
+            "name": "OUTPUT_GLOB",
+            "value": "metricvalue_*"
+            },
+            {
+            "name": "DATA_QUERY",
+            "value": "instrument='LSSTComCam' AND dayObs=20210510 AND seqnum=1"
             },
         ]
     )
