@@ -10,8 +10,11 @@ NAMESPACE="$1"
 if [[ "X${NAMESPACE}" == "X" ]]; then
   NAMESPACE="uws"
 fi
+DEPLOYMENT_NAME="$2"
+if [[ "X${DEPLOYMENT_NAME}" == "X" ]]; then
+  DEPLOYMENT_NAME="uws-api-server"
+fi
 
-DEPLOYMENT_NAME="uws-api-server"
 SOURCE_DIR="server"
 TARGET_DIR="/home/worker/server"
 
