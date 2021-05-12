@@ -190,18 +190,16 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         templateFile = "job.tpl.yaml"
         project_subpath = global_vars.PROJECT_SUBPATH
         image_tag = 'd_latest'
-        # If targeting NCSA Integration cluster
-        if global_vars.TARGET_CLUSTER == "int":
-            # If PROJECT_SUBPATH is provided in the environment variables, use this to mount
-            # the specified directory. Otherwise mount the subpath defined in the server's
-            # env vars
-            for envvar in environment:
-                if envvar['name'] == 'PROJECT_SUBPATH':
-                    project_subpath = envvar['value']
-                if envvar['name'] == 'JOB_IMAGE_TAG':
-                    image_tag = envvar['value']
-            # If not a valid subdirectory of /project, return with error message
-            assert os.path.isdir(f'/project/{project_subpath}')
+        # If PROJECT_SUBPATH is provided in the environment variables, use this to mount
+        # the specified directory. Otherwise mount the subpath defined in the server's
+        # env vars
+        for envvar in environment:
+            if envvar['name'] == 'PROJECT_SUBPATH':
+                project_subpath = envvar['value']
+                # # If not a valid subdirectory of /project, return with error message
+                # assert os.path.isdir(f'/project/{project_subpath}')
+            if envvar['name'] == 'JOB_IMAGE_TAG':
+                image_tag = envvar['value']
         
         with open(os.path.join(os.path.dirname(__file__), templateFile)) as f:
             templateText = f.read()
