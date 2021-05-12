@@ -17,8 +17,8 @@ spec:
     metadata:
       labels:
         type: "uws-job"
-        jobId: {{ jobId }}
-        runId: {{ runId }}
+        jobId: "{{ jobId }}"
+        runId: "{{ runId }}"
     spec:
       restartPolicy: Never
       {% if target_cluster == "int" %}
