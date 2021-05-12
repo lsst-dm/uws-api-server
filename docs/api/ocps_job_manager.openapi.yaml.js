@@ -62,7 +62,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PutJobResponse"
+                $ref: "#/components/schemas/GetJob"
         "400":
           description: Invalid syntax
         "500":
@@ -224,6 +224,8 @@ components:
             - /bin/sh
             - -c
             - sleep 1d
+        environment:
+          $ref: '#/components/schemas/JobEnvironment'
     JobResults:
       type: array
       description: Job output files
@@ -286,37 +288,20 @@ components:
           description: Git repo ref (e.g. branch name, tag, commit hash)
           example: "78494ed"
         environment:
-          type: array
-          description: Environment variables and values
-          items:
-            type: object
-            properties:
-              name:
-                type: string
-                description: Name of environment variable
-                example: "PROJECT_PATH"
-              value:
-                type: string
-                description: Value of environment variable
-                example: "username/projects"
-    PutJobResponse:
-      type: object
-      properties:
-        job_id:
-          type: string
-          description: UUID of new job
-          example: "c2c5484c22a8434aa301e4f56d17d595"
-        api_response:
-          type: string
-          description: Response message from the Kubernetes Job creation API
-          example: ""
-        message:
-          type: string
-          description: Error message if an error occurs
-          example: ""
-        status:
-          type: string
-          description: Success or failure of job creation
-          example: "ok"
+          $ref: '#/components/schemas/JobEnvironment'
+    JobEnvironment:
+      type: array
+      description: Environment variables and values
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            description: Name of environment variable
+            example: "PROJECT_PATH"
+          value:
+            type: string
+            description: Value of environment variable
+            example: "username/projects"
 ################################################################################
 `;
