@@ -129,9 +129,11 @@ def delete_job(job_id):
     try:
         namespace = get_namespace()
         job_name = get_job_name_from_id(job_id)
+        body = client.V1DeleteOptions(propagation_policy='Background')
         api_response = api_batch_v1.delete_namespaced_job(
             namespace=namespace, 
             name=job_name,
+            body=body,
         )
         response['status']  = api_response.status if api_response.status else response['status']
         response['message'] = api_response.message if api_response.message else response['message']
