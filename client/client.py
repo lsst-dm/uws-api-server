@@ -1,3 +1,4 @@
+from datetime import datetime
 import global_vars
 import requests
 import json
@@ -95,7 +96,7 @@ def delete_job(job_id):
 
 if __name__ == '__main__':
     import time
-    
+    from datetime import datetime
     # # DELETE ALL JOBS AND JOB FILES:
     # for job in list_jobs().json():
     #     # if job['runId'] == '12345678':
@@ -106,38 +107,39 @@ if __name__ == '__main__':
     # list_jobs()
     # import sys
     # sys.exit(0)
+
     print('Create a job:')
-    # create_response = create_job(command='ls -l > $JOB_OUTPUT_DIR/dirlist.txt', git_url='https://github.com/lsst-dm/uws-api-server', run_id='my-special-job')
+    visit = 903332
+    detector = 19
+    instrument = 'HSC'
+    collection = 'shared/valid_hsc_all'
+    creation_time = datetime.timestamp(datetime.now())
+    out_collection = f'imgserv_{creation_time}'
+    put_collection = f'imgserv_positions_{creation_time}'
+    env_dict = {
+        'PIPELINE_TASK_CLASS': 'lsst.pipe.tasks.calexpCutout.CalexpCutoutTask',
+        'PROJECT_SUBPATH': 'krughoff/projects/uws_cutout',
+        'BUTLER_REPO': '/project/krughoff/projects/uws_cutout/validation_hsc_gen3',
+        'OUTPUT_COLLECTION': out_collection,
+        'PUT_COLLECTION': put_collection,
+        'RUN_OPTIONS': f'-i {collection},{put_collection}',
+        'DATA_QUERY': f"visit={visit} AND detector={detector} AND instrument='{instrument}'",
+        'OUTPUT_GLOB': 'calexp_cutouts',
+        'CUTOUT_RA': 319.89828,
+        'CUTOUT_DEC': -0.3882156,
+        'CUTOUT_SIZE': 20,
+        'VISIT': visit,
+        'DETECTOR': detector,
+        'INSTRUMENT': instrument,
+        'JOB_IMAGE_TAG': '7-stack-lsst_distrib-w_2021_19',
+    }
+    environment = [{'name': k, 'value': v} for k, v in env_dict.items()]
     create_response = create_job(
-        run_id='andrew-1047308558',
-        command='cd $JOB_SOURCE_DIR && bash bin/pipetask.sh', 
+        run_id='simons-cutout',
+        command='cd $JOB_SOURCE_DIR && bash bin/simon_pipetask.sh i2>&1 > $JOB_OUTPUT_DIR/pipe_task.log',
         git_url='https://github.com/lsst-dm/uws_scripts',
-        environment=[
-            {
-            "name": "EUPS_TAG",
-            "value": ""
-            },
-            {
-            "name": "PIPELINE_URL",
-            "value": "$OBS_LSST_DIR/pipelines/DRP.yaml#isr"
-            },
-            {
-            "name": "BUTLER_REPO",
-            "value": "/repo/LSSTComCam"
-            },
-            {
-            "name": "RUN_OPTIONS",
-            "value": "-i LSSTComCam/defaults,LSSTComCam/raw/all "
-            },
-            {
-            "name": "OUTPUT_GLOB",
-            "value": "metricvalue_*"
-            },
-            {
-            "name": "DATA_QUERY",
-            "value": "instrument='LSSTComCam' AND dayObs=20210510 AND seqnum=1"
-            },
-        ]
+        commit_ref='u/krughoff/DM-29375',
+        environment=environment
     )
     job_id = create_response.json()['jobId']
     
