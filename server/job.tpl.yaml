@@ -149,4 +149,4 @@ spec:
         - name: project-files
           mountPath: "/project/{{ project_subpath }}"
           subPath: "{{ project_subpath }}"
-          {% endid %}
+          {% endif %}
