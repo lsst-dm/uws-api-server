@@ -21,11 +21,13 @@ spec:
         runId: {{ runId }}
     spec:
       restartPolicy: Never
-      # securityContext:
-      #   runAsUser: 1001
-      #   runAsGroup: 1001
-        # fsGroup: 73006
+      {% if target_cluster == "int" %}
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 202
+      {% endif %}
       volumes:
+      {% if target_cluster == "nts" %}
       - name: job-files
         persistentVolumeClaim:
           claimName: nfs-scratch-pvc
@@ -38,9 +40,17 @@ spec:
       - name: nfs-oods-auxtel
         persistentVolumeClaim:
           claimName: nfs-oods-auxtel-pvc
+      {% elif target_cluster == "int" %}
+      - name: job-files
+        persistentVolumeClaim:
+          claimName: lsst-dm-scratch-pvc
+      - name: project-files
+        persistentVolumeClaim:
+          claimName: lsst-dm-projects-pvc
+      {% endif %}
       initContainers:
       - name: {{ container_name }}-init
-        image: {{ image }}
+        image: {{ image.repository }}:{{ image.tag }}
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: job-files
@@ -81,7 +91,7 @@ spec:
           echo ""
       containers:
       - name: {{ container_name }}
-        image: {{ image }}
+        image: {{ image.repository }}:{{ image.tag }}
         imagePullPolicy: IfNotPresent
         command: 
         - '/bin/bash'
@@ -89,12 +99,17 @@ spec:
         - |
           {{ command }}
         env:
+          {% if target_cluster == "nts" %}
           # The "DATA_DIR_*" variables provide the job script with the path to the locations
           # of the available mounted data Butler repos
           - name: "DATA_DIR_COMCAM"
             value: "/data/lsstdata/comcam/oods/gen3butler/repo"
           - name: "DATA_DIR_AUXTEL"
             value: "/data/lsstdata/auxTel/oods/gen3butler/repo"
+          {% elif target_cluster == "int" %}
+          - name: "PROJECT_PATH"
+            value: "/project/{{ project_subpath }}"
+          {% endif %}
           {% if clone_dir %}
           # The "JOB_SOURCE_DIR" provides the job script with the path to the location 
           # of the cloned git repo (optional).
@@ -120,6 +135,7 @@ spec:
         volumeMounts:
         - name: job-files
           mountPath: {{ uws_root_dir }}
+          {% if target_cluster == "nts" %}
         - name: data
           mountPath: /lsstdata/offline/teststand
           readOnly: true
@@ -129,4 +145,8 @@ spec:
         - name: nfs-oods-auxtel
           mountPath: /data/lsstdata/auxTel/oods/gen3butler/repo
           # readOnly: true
-
+          {% elif target_cluster == "int" %}
+        - name: project-files
+          mountPath: "/project/{{ project_subpath }}"
+          subPath: "{{ project_subpath }}"
+          {% endid %}

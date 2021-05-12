@@ -184,11 +184,12 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         else:
             clone_dir = None
         
+        # Set environment-specific configuration for Job definition
+        templateFile = "job.tpl.yaml"
         project_subpath = global_vars.PROJECT_SUBPATH
         image_tag = 'd_latest'
         # If targeting NCSA Integration cluster
         if global_vars.TARGET_CLUSTER == "int":
-            templateFile = "job.int.tpl.yaml"
             # If PROJECT_SUBPATH is provided in the environment variables, use this to mount
             # the specified directory. Otherwise mount the subpath defined in the server's
             # env vars
@@ -199,9 +200,6 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
                     image_tag = envvar['value']
             # If not a valid subdirectory of /project, return with error message
             assert os.path.isdir(f'/project/{project_subpath}')
-        # else assume targeting NCSA Test Stand environment
-        else:
-            templateFile = "job.tpl.yaml"
         
         with open(os.path.join(os.path.dirname(__file__), templateFile)) as f:
             templateText = f.read()
