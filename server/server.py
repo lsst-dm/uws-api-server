@@ -374,5 +374,5 @@ def make_app(base_path=''):
 if __name__ == "__main__":
     app = make_app(base_path=config['server']['basePath'])
     app.listen(int(config['server']['port']))
-    log.info(f'''UWS API server online at {config['server']['protocol']}://{config['server']['service']}:{config['server']['port']}{config['server']['basePath']}'''
+    log.info(f'''UWS API server online at {config['server']['protocol']}://{config['server']['service']}:{config['server']['port']}{config['server']['basePath']}''')
     tornado.ioloop.IOLoop.current().start()
