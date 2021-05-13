@@ -19,7 +19,7 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 log.addHandler(handler)
 try:
-    log.setLevel(os.environ['LOG_LEVEL'].upper())
+    log.setLevel(config['server']['logLevel'].upper())
 except:
     log.setLevel('WARNING')
 

@@ -1,7 +1,7 @@
 import global_vars
 from global_vars import config
 import logging
-from kubernetes import client, kubeconfig
+from kubernetes import client, config as kubeconfig
 from kubernetes.client.rest import ApiException
 import os
 import shutil
@@ -17,7 +17,7 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 log.addHandler(handler)
 try:
-    log.setLevel(os.environ['LOG_LEVEL'].upper())
+    log.setLevel(config['server']['logLevel'].upper())
 except:
     log.setLevel('WARNING')
 
@@ -173,6 +173,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         'status': global_vars.STATUS_OK,
     }
     try:
+        log.debug(config['workingVolume'])
         namespace = get_namespace()
         job_id = generate_uuid()
         if not run_id:
@@ -222,7 +223,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             uws_root_dir=config['workingVolume']['mountPath'],
             job_output_dir=job_output_dir,
             project_subpath=project_subpath,
-            securityContext=yaml.dump(config['job']['securityContext'], indent=2),
+            securityContext=config['job']['securityContext'],
             workingVolume=config['workingVolume'],
             volumes=config['volumes'],
         ))

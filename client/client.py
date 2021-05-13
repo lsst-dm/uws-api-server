@@ -1,15 +1,12 @@
 from datetime import datetime
 import requests
 import json
+import yaml
 
 # Load configuration file
-try:
-    with open('/etc/config/uws.yaml', "r") as conf_file:
-        config = yaml.load(conf_file, Loader=yaml.FullLoader)
-    config['apiBaseUrl'] = f'''{config['server']['protocol']}://{config['server']['service']}:{config['server']['port']}{config['server']['basePath']}'''
-except Exception as e:
-    log.error(str(e))
-
+with open('/etc/config/uws.yaml', "r") as conf_file:
+    config = yaml.load(conf_file, Loader=yaml.FullLoader)
+config['apiBaseUrl'] = f'''{config['server']['protocol']}://{config['server']['service']}:{config['server']['port']}{config['server']['basePath']}'''
 
 def get_result(job_id=None, result_id=''):
     url = f'{config["apiBaseUrl"]}/job/result/{job_id}/{result_id}'
@@ -111,37 +108,16 @@ if __name__ == '__main__':
     # sys.exit(0)
 
     print('Create a job:')
-    visit = 903332
-    detector = 19
-    instrument = 'HSC'
-    collection = 'shared/valid_hsc_all'
-    creation_time = datetime.timestamp(datetime.now())
-    out_collection = f'imgserv_{creation_time}'
-    put_collection = f'imgserv_positions_{creation_time}'
-    env_dict = {
-        'PIPELINE_TASK_CLASS': 'lsst.pipe.tasks.calexpCutout.CalexpCutoutTask',
-        'PROJECT_SUBPATH': 'krughoff/projects/uws_cutout',
-        'BUTLER_REPO': '/project/krughoff/projects/uws_cutout/validation_hsc_gen3',
-        'OUTPUT_COLLECTION': out_collection,
-        'PUT_COLLECTION': put_collection,
-        'RUN_OPTIONS': f'-i {collection},{put_collection}',
-        'DATA_QUERY': f"visit={visit} AND detector={detector} AND instrument='{instrument}'",
-        'OUTPUT_GLOB': 'calexp_cutouts',
-        'CUTOUT_RA': 319.89828,
-        'CUTOUT_DEC': -0.3882156,
-        'CUTOUT_SIZE': 20,
-        'VISIT': visit,
-        'DETECTOR': detector,
-        'INSTRUMENT': instrument,
-        'JOB_IMAGE_TAG': '7-stack-lsst_distrib-w_2021_19',
-    }
-    environment = [{'name': k, 'value': v} for k, v in env_dict.items()]
     create_response = create_job(
-        run_id='simons-cutout',
-        command='cd $JOB_SOURCE_DIR && bash bin/simon_pipetask.sh i2>&1 > $JOB_OUTPUT_DIR/pipe_task.log',
-        git_url='https://github.com/lsst-dm/uws_scripts',
-        commit_ref='u/krughoff/DM-29375',
-        environment=environment
+        run_id='hello-world',
+        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh', 
+        git_url='https://github.com/lsst-dm/uws-api-server',
+        environment=[
+            {
+                'name': 'CUSTOM_ENV_VAR',
+                'value': 'Success!',
+            },
+        ]
     )
     job_id = create_response.json()['jobId']
     

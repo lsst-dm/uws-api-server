@@ -22,17 +22,19 @@ spec:
     spec:
       restartPolicy: Never
       securityContext:
-        {{ securityContext }}
+        runAsUser: {{ securityContext['runAsUser'] }}
+        runAsGroup: {{ securityContext['runAsGroup'] }}
+        fsGroup: {{ securityContext['fsGroup'] }}
       volumes:
         # Volume to host job data
-        - name: "{{ workingVolume.name }}"
+        - name: "{{ workingVolume['name'] }}"
           persistentVolumeClaim:
-            claimName: "{{ workingVolume.claimName }}"
+            claimName: "{{ workingVolume['claimName'] }}"
       {%- for volume in volumes %}
         - name: {{ volume.name }}
         {%- if volume.claimName %}
           persistentVolumeClaim:
-            claimName: {{ volume.name }}
+            claimName: {{ volume.claimName }}
         {%- else %}
           emptyDir: {}
         {%- endif %}
@@ -42,9 +44,9 @@ spec:
         image: {{ image.repository }}:{{ image.tag }}
         imagePullPolicy: IfNotPresent
         volumeMounts:
-        - name: "{{ workingVolume.name }}"
-          mountPath: "{{ workingVolume.mountPath }}"
-          subPath: "{{ workingVolume.subPath }}"
+        - name: "{{ workingVolume['name'] }}"
+          mountPath: "{{ workingVolume['mountPath'] }}"
+          subPath: "{{ workingVolume['subPath'] }}"
         env:
           - name: "SRC_GIT_URL"
             value: "{{ url }}"
