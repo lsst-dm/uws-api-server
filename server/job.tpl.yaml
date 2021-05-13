@@ -88,8 +88,7 @@ spec:
         command: 
         - '/bin/bash'
         - '-c'
-        - |
-          {{ command }}
+        - {{ command }}
         env:
           {%- if clone_dir %}
           # The "JOB_SOURCE_DIR" provides the job script with the path to the location 
