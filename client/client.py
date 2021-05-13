@@ -6,7 +6,7 @@ import yaml
 # Load configuration file
 with open('/etc/config/uws.yaml', "r") as conf_file:
     config = yaml.load(conf_file, Loader=yaml.FullLoader)
-config['apiBaseUrl'] = f'''{config['server']['protocol']}://{config['server']['service']}:{config['server']['port']}{config['server']['basePath']}'''
+config['apiBaseUrl'] = f'''{config['server']['protocol']}://{config['server']['service']}{config['server']['basePath']}'''
 
 def get_result(job_id=None, result_id=''):
     url = f'{config["apiBaseUrl"]}/job/result/{job_id}/{result_id}'
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     print('Create a job:')
     create_response = create_job(
         run_id='hello-world',
-        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh', 
+        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh > $JOB_OUTPUT_DIR/out.log', 
         git_url='https://github.com/lsst-dm/uws-api-server',
         environment=[
             {
@@ -134,7 +134,9 @@ if __name__ == '__main__':
     
     # Show output files
     if job_phase == 'completed':
-        print('Fetching results...')
+        wait_sec = 10
+        print(f'Fetching results (wait {wait_sec} seconds)...')
+        time.sleep(wait_sec)
         results = get_job(job_id, property='results').json()
         for result in results:
             downloaded_file = get_result(job_id=job_id, result_id=result['id'])
