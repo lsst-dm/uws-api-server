@@ -1,13 +1,14 @@
 import global_vars
+from global_vars import config
 import logging
 import tornado.ioloop
 import tornado.web
 import tornado
 import json
+import yaml
 import os
 from datetime import datetime, timedelta
 import re
-import base64
 from mimetypes import guess_type
 
 # Configure logging
@@ -231,13 +232,8 @@ class JobHandler(BaseHandler):
         # See https://www.ivoa.net/documents/UWS/20161024/REC-UWS-1.1-20161024.html#resourceuri
         valid_properties = {
             'phase': 'phase',
-            # 'executionduration',
-            # 'destruction',
-            # 'error',
-            # 'quote',
             'results': 'results',
             'parameters': 'parameters',
-            # 'owner': 'ownerId',
         }
         response = {}
         # If no job_id is included in the request URL, return a list of jobs. See:
@@ -376,7 +372,7 @@ def make_app(base_path=''):
 
 
 if __name__ == "__main__":
-    app = make_app(base_path=global_vars.API_BASEPATH)
-    app.listen(int(global_vars.API_PORT))
-    log.info('UWS API server online at {}://{}:{}{}'.format(global_vars.API_PROTOCOL, global_vars.API_DOMAIN, global_vars.API_PORT, global_vars.API_BASEPATH))
+    app = make_app(base_path=config['server']['basePath'])
+    app.listen(int(config['server']['port']))
+    log.info(f'''UWS API server online at {config['server']['protocol']}://{config['server']['service']}:{config['server']['port']}{config['server']['basePath']}'''
     tornado.ioloop.IOLoop.current().start()

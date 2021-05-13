@@ -1,12 +1,14 @@
 from datetime import datetime
-import global_vars
 import requests
 import json
 
-# Import credentials and config from environment variables
-config = {
-    'apiBaseUrl': '{}://{}:{}{}'.format(global_vars.API_PROTOCOL, global_vars.API_DOMAIN, global_vars.API_PORT, global_vars.API_BASEPATH),
-}
+# Load configuration file
+try:
+    with open('/etc/config/uws.yaml', "r") as conf_file:
+        config = yaml.load(conf_file, Loader=yaml.FullLoader)
+    config['apiBaseUrl'] = f'''{config['server']['protocol']}://{config['server']['service']}:{config['server']['port']}{config['server']['basePath']}'''
+except Exception as e:
+    log.error(str(e))
 
 
 def get_result(job_id=None, result_id=''):
@@ -47,17 +49,17 @@ def get_job(job_id, property=None):
             '{}/job/{}/{}'.format(config['apiBaseUrl'], job_id, property),
         )
         try:
-            print('GET {}/job/{}/{} :\nHTTP code: {}\n{}\n\n'.format(global_vars.API_BASEPATH, job_id, property, response.status_code, json.dumps(response.json(), indent=2)))
+            print('GET {}/job/{}/{} :\nHTTP code: {}\n{}\n\n'.format(config['server']['basePath'], job_id, property, response.status_code, json.dumps(response.json(), indent=2)))
         except:
-            print('GET {}/job/{}/{} :\nHTTP code: {}\n{}\n\n'.format(global_vars.API_BASEPATH, job_id, property, response.status_code, response))
+            print('GET {}/job/{}/{} :\nHTTP code: {}\n{}\n\n'.format(config['server']['basePath'], job_id, property, response.status_code, response))
     else:
         response = requests.get(
             '{}/job/{}'.format(config['apiBaseUrl'], job_id),
         )
         try:
-            print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(global_vars.API_BASEPATH, job_id, response.status_code, json.dumps(response.json(), indent=2)))
+            print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(config['server']['basePath'], job_id, response.status_code, json.dumps(response.json(), indent=2)))
         except:
-            print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(global_vars.API_BASEPATH, job_id, response.status_code, response))
+            print('GET {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(config['server']['basePath'], job_id, response.status_code, response))
     return response
 
 
@@ -87,10 +89,10 @@ def delete_job(job_id):
     )
     # print(response)
     try:
-        print('DELETE {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(global_vars.API_BASEPATH, job_id, response.status_code, json.dumps(response.json(), indent=2)))
+        print('DELETE {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(config['server']['basePath'], job_id, response.status_code, json.dumps(response.json(), indent=2)))
         return response.json()
     except:
-        print('DELETE {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(global_vars.API_BASEPATH, job_id, response.status_code, response.text))
+        print('DELETE {}/job/{} :\nHTTP code: {}\n{}\n\n'.format(config['server']['basePath'], job_id, response.status_code, response.text))
         return response.text
 
 

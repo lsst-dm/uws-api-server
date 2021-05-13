@@ -1,6 +1,7 @@
 import global_vars
+from global_vars import config
 import logging
-from kubernetes import client, config
+from kubernetes import client, kubeconfig
 from kubernetes.client.rest import ApiException
 import os
 import shutil
@@ -20,7 +21,7 @@ try:
 except:
     log.setLevel('WARNING')
 
-config.load_incluster_config()
+kubeconfig.load_incluster_config()
 configuration = client.Configuration()
 api_batch_v1 = client.BatchV1Api(client.ApiClient(configuration))
 api_v1 = client.CoreV1Api(client.ApiClient(configuration))
@@ -48,7 +49,7 @@ def get_job_name_from_id(job_id):
 
 
 def get_job_root_dir_from_id(job_id):
-    return os.path.join(global_vars.UWS_ROOT_DIR, 'jobs', job_id)
+    return os.path.join(config['workingVolume']['mountPath'], 'jobs', job_id)
 
 
 def list_job_output_files(job_id):
@@ -188,17 +189,10 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         
         # Set environment-specific configuration for Job definition
         templateFile = "job.tpl.yaml"
-        project_subpath = global_vars.PROJECT_SUBPATH
-        image_tag = 'd_latest'
-        # If PROJECT_SUBPATH is provided in the environment variables, use this to mount
-        # the specified directory. Otherwise mount the subpath defined in the server's
-        # env vars
+        project_subpath = ''
+        image_tag = config['job']['image']['tag']
         for envvar in environment:
-            if envvar['name'] == 'PROJECT_SUBPATH':
-                project_subpath = envvar['value']
-                # # If not a valid subdirectory of /project, return with error message
-                # assert os.path.isdir(f'/project/{project_subpath}')
-            if envvar['name'] == 'JOB_IMAGE_TAG':
+            if envvar['name'] == 'UWS_JOB_IMAGE_TAG':
                 image_tag = envvar['value']
         
         with open(os.path.join(os.path.dirname(__file__), templateFile)) as f:
@@ -212,13 +206,12 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             backoffLimit=0,
             replicas=replicas,
             container_name='uws-job',
-            # TODO: Allow some flexibility in the Docker container image name and/or tag.
             # CAUTION: Discrepancy between the UID of the image user and the UWS API server UID
             #          will create permissions problems. For example, if the job UID is 1001 and
             #          the server UID is 1000, then files created by the job will not in general 
             #          allow the server to delete them when cleaning up deleted jobs.
             image={
-                'repository': 'lsstsqre/centos',
+                'repository': config['job']['image']['repository'],
                 'tag': image_tag,
             },
             command=command,
@@ -226,16 +219,12 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             url=url if url else '',
             clone_dir=clone_dir if clone_dir else '',
             commit_ref=commit_ref if commit_ref else '',
-            uws_root_dir=global_vars.UWS_ROOT_DIR,
-            target_cluster=global_vars.TARGET_CLUSTER,
+            uws_root_dir=config['workingVolume']['mountPath'],
             job_output_dir=job_output_dir,
             project_subpath=project_subpath,
-            job_files_pvc=f'{os.environ["API_DOMAIN"]}-nfs-scratch-pvc',
-            data_pvc=f'{os.environ["API_DOMAIN"]}-nfs-data-pvc',
-            oods_comcam_pvc=f'{os.environ["API_DOMAIN"]}-nfs-oods-comcam-pvc',
-            oods_auxtel_pvc=f'{os.environ["API_DOMAIN"]}-nfs-oods-auxtel-pvc',
-            repo_pvc=f'{os.environ["API_DOMAIN"]}-repo-pvc',
-            project_pvc=f'{os.environ["API_DOMAIN"]}-project-pvc',
+            securityContext=yaml.dump(config['job']['securityContext'], indent=2),
+            workingVolume=config['workingVolume'],
+            volumes=config['volumes'],
         ))
         log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(
