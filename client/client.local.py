@@ -14,26 +14,36 @@ config = {
     'server': {
         'basePath': '/api/v1',
     },
-    'apiBaseUrl': 'https://lsst-nts-k8s.ncsa.illinois.edu/uws-server/api/v1',
+    # 'apiBaseUrl': 'https://lsst-nts-k8s.ncsa.illinois.edu/uws-server/api/v1',
+    'apiBaseUrl': 'https://summit-lsp.lsst.codes/uws-server/api/v1',
     'auth': b64encode(bytes(f"{os.environ['UWS_USER_PASS']}", 'utf-8')).decode("ascii"),
 }
 auth_header = {'Authorization': f'Basic {config["auth"]}'}
 
-def get_result(job_id=None, result_id=''):
-    url = f'{config["apiBaseUrl"]}/job/result/{job_id}/{result_id}'
+def get_result(job_id=None, result=None):
+    url = f'{config["apiBaseUrl"]}/job/result/{job_id}/{result["id"]}'
     try:
-        local_filename = url.split('/')[-1]
+        # local_filename = os.path.basename(result['uri'])
+        # local_dir = os.path.join('.', os.path.dirname(result['uri']))
+        # local_filepath = os.path.join(local_dir, local_filename)
+        local_filepath = os.path.join(os.path.abspath(os.getcwd()), result['uri'].strip('/') )
+        print(f'Downloading result {result["id"]} to "{local_filepath}"...')
         # NOTE the stream=True parameter below
-        with requests.get(url, stream=True) as r:
+        with requests.get(
+            url, 
+            stream=True,
+            headers=auth_header,
+        ) as r:
             r.raise_for_status()
-            with open(local_filename, 'wb') as f:
+            os.makedirs(os.path.dirname(local_filepath), exist_ok=True)
+            with open(local_filepath, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192): 
                     # If you have chunk encoded response uncomment if
                     # and set chunk_size parameter to None.
                     #if chunk: 
                     f.write(chunk)
-        print(f'Download result file to "./{local_filename}".')
-        return local_filename
+        print(f'    Download complete.')
+        return local_filepath
     except Exception as e:
         print(f'Error fetching result file: {str(e)}')
         return None
@@ -114,28 +124,34 @@ def delete_job(job_id):
 if __name__ == '__main__':
     import time
     from datetime import datetime
+    
     # # DELETE ALL JOBS AND JOB FILES:
     # for job in list_jobs().json():
     #     # if job['runId'] == '12345678':
     #         print(f'Deleting job {job["jobId"]}...')
     #         delete_job(job['jobId'])
     
-    print('List all jobs:')
-    list_jobs()
-    import sys
-    sys.exit(0)
+    # print('List all jobs:')
+    # list_jobs()
+    # import sys
+    # sys.exit(0)
 
     print('Create a job:')
+    payload_env = dict(
+        EUPS_TAG="",
+        PIPELINE_URL='$OBS_LSST_DIR/pipelines/DRP.yaml#isr',
+        BUTLER_REPO='/repo/LATISS',
+        RUN_OPTIONS="-c isr:doBias=False -c isr:doDark=False -c isr:doFlat=False -c isr:doFringe=False -c isr:doLinearize=False -c isr:doDefect=False -i LATISS/raw/all",
+        DATA_QUERY="instrument='LATISS' AND exposure.day_obs=20210414 AND exposure.seq_num=2",
+        OUTPUT_GLOB='*',
+    )
     create_response = create_job(
-        run_id='hello-world',
-        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh > $JOB_OUTPUT_DIR/out.log', 
-        git_url='https://github.com/lsst-dm/uws-api-server',
-        environment=[
-            {
-                'name': 'CUSTOM_ENV_VAR',
-                'value': 'Success!',
-            },
-        ]
+        run_id='pipetask',
+        command='cd $JOB_SOURCE_DIR && bash bin/pipetask.sh',
+        # command='sleep 10m',
+        git_url='https://github.com/lsst-dm/uws_scripts',
+        commit_ref='17b49f053bcdacf53f420db251e36503e56e0293',
+        environment=[dict(name=k, value=v) for k, v in payload_env.items()],
     )
     job_id = create_response.json()['jobId']
     
@@ -152,12 +168,12 @@ if __name__ == '__main__':
     
     # Show output files
     if job_phase == 'completed':
-        wait_sec = 10
+        wait_sec = 0
         print(f'Fetching results (wait {wait_sec} seconds)...')
         time.sleep(wait_sec)
         results = get_job(job_id, property='results').json()
         for result in results:
-            downloaded_file = get_result(job_id=job_id, result_id=result['id'])
+            downloaded_file = get_result(job_id=job_id, result=result)
             if downloaded_file:
                 print(f'Contents of result file "{downloaded_file}":')
                 with open(downloaded_file, 'r') as dfile:
