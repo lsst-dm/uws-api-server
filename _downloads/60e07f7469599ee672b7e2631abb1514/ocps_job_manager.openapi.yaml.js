@@ -289,6 +289,10 @@ components:
           example: "78494ed"
         environment:
           $ref: '#/components/schemas/JobEnvironment'
+        replicas:
+          type: integer
+          description: Optional number of parallel containers to spawn
+          example: 1
     JobEnvironment:
       type: array
       description: Environment variables and values
