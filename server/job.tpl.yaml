@@ -42,7 +42,7 @@ spec:
       initContainers:
       - name: {{ container_name }}-init
         image: {{ image.repository }}:{{ image.tag }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ image.pull_policy }}
         volumeMounts:
         - name: "{{ workingVolume['name'] }}"
           mountPath: "{{ workingVolume['mountPath'] }}"
@@ -84,7 +84,7 @@ spec:
       containers:
       - name: {{ container_name }}
         image: {{ image.repository }}:{{ image.tag }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ image.pull_policy }}
         command: 
         - '/bin/bash'
         - '-c'
