@@ -218,7 +218,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             image={
                 'repository': config['job']['image']['repository'],
                 'tag': image_tag,
-                'pull_policy': 'Always' if image_tag == 'd_latest' else 'IfNotPresent',
+                'pull_policy': 'Always' if image_tag in ['d_latest', 'w_latest'] else 'IfNotPresent',
             },
             command=command,
             environment=environment,
