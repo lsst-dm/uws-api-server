@@ -174,7 +174,7 @@ if __name__ == '__main__':
         results = get_job(job_id, property='results').json()
         for result in results:
             downloaded_file = get_result(job_id=job_id, result=result)
-            if downloaded_file:
-                print(f'Contents of result file "{downloaded_file}":')
-                with open(downloaded_file, 'r') as dfile:
-                    print(dfile.read())
+            # if downloaded_file:
+            #     print(f'Contents of result file "{downloaded_file}":')
+            #     with open(downloaded_file, 'r') as dfile:
+            #         print(dfile.read())
