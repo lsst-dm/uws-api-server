@@ -26,11 +26,6 @@ There is a very helpful VS Code extension called `reStructuredText <https://gith
 
 .. image:: images/vscode_plugin.png
 
-GitHub Actions and Pages
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This documentation is automatically built and published using GitHub Actions and GitHub pages. There is a workflow definition file in ``/.github/workflows/`` that creates a GitHub Action that triggers the build process whenever there is a push to the `master` branch.
-
 File editors and viewers
 ----------------------------------------
 

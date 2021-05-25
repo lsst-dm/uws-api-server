@@ -89,7 +89,6 @@
 <li class="toctree-l1"><a class="reference internal" href="Development.html">Development</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Development.html#documentation-system">Documentation system</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="Development.html#sphinx">Sphinx</a></li>
-<li class="toctree-l3"><a class="reference internal" href="Development.html#github-actions-and-pages">GitHub Actions and Pages</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="Development.html#file-editors-and-viewers">File editors and viewers</a></li>
@@ -109,9 +108,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Deployment.html">Kubernetes Deployment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Deployment.html#persistent-volumes">Persistent Volumes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Deployment.html#kubectl-access">kubectl access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#argocd">ArgoCD</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Deployment.html#helm-chart-installation">Helm chart installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#kubectl-access">kubectl access</a></li>
 </ul>
 </li>
 </ul>
@@ -205,12 +204,28 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Deployment.html">Kubernetes Deployment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Deployment.html#persistent-volumes">Persistent Volumes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Deployment.html#kubectl-access">kubectl access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#argocd">ArgoCD</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Deployment.html#helm-chart-installation">Helm chart installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#kubectl-access">kubectl access</a></li>
 </ul>
 </li>
 </ul>
+</div>
+<div class="section" id="system-components">
+<h2>System components<a class="headerlink" href="#system-components" title="Permalink to this headline">¶</a></h2>
+<p>The OCPS system consists of several components.</p>
+<div class="section" id="docker-images">
+<h3>Docker images<a class="headerlink" href="#docker-images" title="Permalink to this headline">¶</a></h3>
+<p>The source code repo <a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a> is used to build the Docker image of the UWS API server. GitHub Actions are used to automatically build the <code class="docutils literal notranslate"><span class="pre">latest</span></code> (<code class="docutils literal notranslate"><span class="pre">dev</span></code>) tagged image when commits are pushed to the <code class="docutils literal notranslate"><span class="pre">master</span></code> (<code class="docutils literal notranslate"><span class="pre">dev</span></code>) branch.</p>
+</div>
+<div class="section" id="kubernetes-deployment">
+<h3>Kubernetes deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this headline">¶</a></h3>
+<p>The Kubernetes deployment is defined by a Helm chart in the Helm repo <a class="reference external" href="https://lsst-dm.github.io/charts">https://lsst-dm.github.io/charts</a>. Releases of this Helm chart are deployed on the NTS and Summit clusters via ArgoCD apps. See <a class="reference internal" href="Deployment.html"><span class="doc">Kubernetes Deployment</span></a> for details.</p>
+</div>
+<div class="section" id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+<p>This documentation is automatically built and published using GitHub Actions and GitHub pages. There is a workflow definition file in <code class="docutils literal notranslate"><span class="pre">/.github/workflows/</span></code> that creates a GitHub Action that triggers the build process whenever there is a push to the <cite>master</cite> branch. See <a class="reference internal" href="Development.html"><span class="doc">Development</span></a> for details.</p>
+</div>
 </div>
 <div class="section" id="links">
 <h2>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h2>
