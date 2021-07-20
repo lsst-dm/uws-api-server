@@ -10,14 +10,17 @@ import os
 from datetime import datetime, timedelta
 import re
 from mimetypes import guess_type
+import time
 
 # Configure logging
-log = logging.getLogger("uws_api_server")
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-    '%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-log.addHandler(handler)
+logging.basicConfig(
+    format='%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s',
+)
+log = logging.getLogger("uws-server")
+# handler = logging.StreamHandler()
+# formatter = logging.Formatter('%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s')
+# handler.setFormatter(formatter)
+# log.addHandler(handler)
 try:
     log.setLevel(config['server']['logLevel'].upper())
 except:
@@ -210,17 +213,26 @@ class JobHandler(BaseHandler):
             url=url, 
             commit_ref=commit_ref,
         )
-        log.debug(response)
+        # log.debug(response)
         if response['status'] != global_vars.STATUS_OK:
             self.send_response(response['message'], http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
             self.finish()
             return
         try:
-            results = kubejob.list_jobs(
-                job_id=response['job_id'],
-            )
-            job = construct_job_object(results['jobs'][0])
-            self.send_response(job, indent=2)
+            timeout = 30
+            while timeout > 0:
+                results = kubejob.list_jobs(
+                    job_id=response['job_id'],
+                )
+                if results['jobs']:
+                    job = construct_job_object(results['jobs'][0])
+                    self.send_response(job, indent=2)
+                    self.finish()
+                    return
+                else:
+                    timeout -= 1
+                    time.sleep(0.300)
+            self.send_response("Job creation timed out.", http_status_code=global_vars.HTTP_SERVER_ERROR, return_json=False)
             self.finish()
             return
         except Exception as e:

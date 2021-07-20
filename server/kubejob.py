@@ -10,12 +10,14 @@ from jinja2 import Template
 import uuid
 
 # Configure logging
-log = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-    '%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s')
-handler.setFormatter(formatter)
-log.addHandler(handler)
+logging.basicConfig(
+    format='%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s',
+)
+log = logging.getLogger("kubejob")
+# handler = logging.StreamHandler()
+# formatter = logging.Formatter('%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s')
+# handler.setFormatter(formatter)
+# log.addHandler(handler)
 try:
     log.setLevel(config['server']['logLevel'].upper())
 except:
@@ -56,6 +58,7 @@ def list_job_output_files(job_id):
     job_filepaths = []
     try:
         job_output_dir = os.path.join(get_job_root_dir_from_id(job_id), 'out')
+        log.debug(f'Listing job files ({job_id}) [{job_output_dir}]:')
         if os.path.isdir(job_output_dir):
             for dirpath, dirnames, filenames in os.walk(job_output_dir):
                 for filename in filenames:
@@ -95,12 +98,15 @@ def list_jobs(job_id=None):
                     'name': envvar.name,
                     'value': envvar.value,
                 })
+            command = []
+            for command_element in item.spec.template.spec.containers[0].command:
+                command.append(command_element.strip())
             job = {
                 'name': item.metadata.name,
                 'creation_time': item.metadata.creation_timestamp,
                 'job_id': item.metadata.labels['jobId'],
                 'run_id': item.metadata.labels['runId'],
-                'command': item.spec.template.spec.containers[0].command,
+                'command': command,
                 'environment': envvars,
                 'output_files': list_job_output_files(item.metadata.labels['jobId']),
                 'status': {
@@ -168,12 +174,10 @@ def delete_job(job_id):
 def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, environment=None):
     response = {
         'job_id': None,
-        'api_response': None,
         'message': None,
         'status': global_vars.STATUS_OK,
     }
     try:
-        log.debug(config['workingVolume'])
         namespace = get_namespace()
         job_id = generate_uuid()
         if not run_id:
@@ -214,6 +218,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             image={
                 'repository': config['job']['image']['repository'],
                 'tag': image_tag,
+                'pull_policy': 'Always' if image_tag in ['d_latest', 'w_latest'] else 'IfNotPresent',
             },
             command=command,
             environment=environment,
@@ -232,7 +237,6 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             namespace=namespace, body=job_body
         )
         response['job_id'] = job_id
-        response['api_response'] = api_response
         log.debug(f"Job {job_name} created")
     # TODO: Is there additional information to obtain from the ApiException?
     # except ApiException as e:

@@ -42,7 +42,7 @@ spec:
       initContainers:
       - name: {{ container_name }}-init
         image: {{ image.repository }}:{{ image.tag }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ image.pull_policy }}
         volumeMounts:
         - name: "{{ workingVolume['name'] }}"
           mountPath: "{{ workingVolume['mountPath'] }}"
@@ -84,12 +84,11 @@ spec:
       containers:
       - name: {{ container_name }}
         image: {{ image.repository }}:{{ image.tag }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ image.pull_policy }}
         command: 
         - '/bin/bash'
         - '-c'
-        - |
-          {{ command }}
+        - {{ command }}
         env:
           {%- if clone_dir %}
           # The "JOB_SOURCE_DIR" provides the job script with the path to the location 

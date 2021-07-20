@@ -26,11 +26,6 @@ There is a very helpful VS Code extension called `reStructuredText <https://gith
 
 .. image:: images/vscode_plugin.png
 
-GitHub Actions and Pages
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This documentation is automatically built and published using GitHub Actions and GitHub pages. There is a workflow definition file in ``/.github/workflows/`` that creates a GitHub Action that triggers the build process whenever there is a push to the `master` branch.
-
 File editors and viewers
 ----------------------------------------
 
@@ -83,7 +78,7 @@ I logged in using a local terminal session and authenticated with my password an
 Source code sync scripts
 ----------------------------------------
 
-To rapidly iterate on code, use the sync scripts to push local files into the running containers. To update the UWS server, from this repo clone root deirectory, run ::
+To rapidly iterate on code, use the sync scripts to push local files into the running containers. To update the UWS server, from the root directory of your clone of https://github.com/lsst-dm/uws-api-server, run ::
 
   ./k8s_sync_server.sh $NAMESPACE
   

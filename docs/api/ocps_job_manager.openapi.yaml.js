@@ -12,6 +12,8 @@ servers:
 tags:
 - name: Jobs
   description: Manage jobs
+- name: Results
+  description: Manage results
 paths:
   /job:
     get:
@@ -163,6 +165,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GenericServerError"
+  "/job/result/{job_id}/{result_id}":
+    get:
+      tags:
+      - Results
+      summary: Download an output file of an existing job
+      operationId: getJobResult
+      parameters:
+      - name: job_id
+        in: path
+        description: ID of job that generated the desired file
+        required: true
+        schema:
+          type: string
+      - name: result_id
+        in: path
+        required: true
+        description: ID of result/output file
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: successful operation
+          content:
+            '*/*':
+              schema: 
+                type: string
+                format: binary
+        "400":
+          description: Invalid job ID or result ID supplied
+        "404":
+          description: File not found
+        "500":
+          description: error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericServerError"
 components:
   schemas:
     GenericServerError:
@@ -236,7 +275,7 @@ components:
             type: integer
             description: Result ID associated with one output file
             example: 0
-          uri:
+          path:
             type: string
             description: Relative path of an output file
             example: /uws/jobs/3151ec18cace4bf0946b95e958c0edc6/out/my_file.dat
@@ -289,6 +328,10 @@ components:
           example: "78494ed"
         environment:
           $ref: '#/components/schemas/JobEnvironment'
+        replicas:
+          type: integer
+          description: Optional number of parallel containers to spawn
+          example: 1
     JobEnvironment:
       type: array
       description: Environment variables and values
