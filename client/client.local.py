@@ -2,6 +2,7 @@ from datetime import datetime
 import requests
 import json
 import os
+import sys
 from base64 import b64encode
 
 ## Set an environment variable UWS_USER_PASS with the basic auth credentials prior to running this script:
@@ -14,8 +15,8 @@ config = {
     'server': {
         'basePath': '/api/v1',
     },
-    # 'apiBaseUrl': 'https://lsst-nts-k8s.ncsa.illinois.edu/uws-server/api/v1',
-    'apiBaseUrl': 'https://summit-lsp.lsst.codes/uws-server/api/v1',
+    'apiBaseUrl': 'https://lsst-nts-k8s.ncsa.illinois.edu/dev-uws-server/api/v1',
+    # 'apiBaseUrl': 'https://summit-lsp.lsst.codes/dev-uws-server/api/v1',
     'auth': b64encode(bytes(f"{os.environ['UWS_USER_PASS']}", 'utf-8')).decode("ascii"),
 }
 auth_header = {'Authorization': f'Basic {config["auth"]}'}
@@ -103,7 +104,7 @@ def create_job(command='sleep 120', run_id=None, environment=[], git_url=None, c
     try:
         responseText = json.dumps(response.json(), indent=2)
     except:
-        responseText = json.dumps(response.text)
+        responseText = response.text
     print(f'PUT {url} :\nHTTP code: {response.status_code}\n{responseText}\n\n')
     return response
 
@@ -137,23 +138,39 @@ if __name__ == '__main__':
     # sys.exit(0)
 
     print('Create a job:')
+    # payload_env = dict(
+    #     EUPS_TAG="",
+    #     PIPELINE_URL='$OBS_LSST_DIR/pipelines/DRP.yaml#isr',
+    #     BUTLER_REPO='/repo/LATISS',
+    #     RUN_OPTIONS="-c isr:doBias=False -c isr:doDark=False -c isr:doFlat=False -c isr:doFringe=False -c isr:doLinearize=False -c isr:doDefect=False -i LATISS/raw/all",
+    #     DATA_QUERY="instrument='LATISS' AND exposure.day_obs=20210414 AND exposure.seq_num=2",
+    #     OUTPUT_GLOB='*',
+    # )
+    # create_response = create_job(
+    #     run_id='pipetask',
+    #     command='cd $JOB_SOURCE_DIR && bash bin/pipetask.sh',
+    #     # command='sleep 10m',
+    #     git_url='https://github.com/lsst-dm/uws_scripts',
+    #     commit_ref='17b49f053bcdacf53f420db251e36503e56e0293',
+    #     environment=[dict(name=k, value=v) for k, v in payload_env.items()],
+    # )
+    
     payload_env = dict(
-        EUPS_TAG="",
-        PIPELINE_URL='$OBS_LSST_DIR/pipelines/DRP.yaml#isr',
-        BUTLER_REPO='/repo/LATISS',
-        RUN_OPTIONS="-c isr:doBias=False -c isr:doDark=False -c isr:doFlat=False -c isr:doFringe=False -c isr:doLinearize=False -c isr:doDefect=False -i LATISS/raw/all",
-        DATA_QUERY="instrument='LATISS' AND exposure.day_obs=20210414 AND exposure.seq_num=2",
-        OUTPUT_GLOB='*',
+        CUSTOM_ENV_VAR="Hello OCPS!",
     )
     create_response = create_job(
-        run_id='pipetask',
-        command='cd $JOB_SOURCE_DIR && bash bin/pipetask.sh',
-        # command='sleep 10m',
-        git_url='https://github.com/lsst-dm/uws_scripts',
-        commit_ref='17b49f053bcdacf53f420db251e36503e56e0293',
+        run_id='hello-world',
+        command='cd $JOB_SOURCE_DIR && bash test/hello-world/hello-world.sh',
+        git_url='https://github.com/lsst-dm/uws-api-server',
+        commit_ref='d044eee155f1019c4da737271653a21d9907601c',
         environment=[dict(name=k, value=v) for k, v in payload_env.items()],
     )
-    job_id = create_response.json()['jobId']
+    
+    if create_response.status_code != 200:
+        print("ERROR. Aborting.")
+        sys.exit(1)
+    else:
+        job_id = create_response.json()['jobId']
     
     print('List jobs that are executing:')
     list_jobs(phase='executing')
