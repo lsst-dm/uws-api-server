@@ -16,7 +16,7 @@ Credentials to access these ArgoCD instances is provided via the `https://lsstit
 
 An example of the ArgoCD Application manifest is shown below:
 
-```
+```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -42,8 +42,36 @@ spec:
     targetRevision: master
 ```
 
-Helm chart installation
----------------------------
+And for a concurrent development release:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: 'uws-dev'
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/lsst-dm/charts'
+    path: charts/uws-api-server
+    targetRevision: dev
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-nts-dev.yaml
+      parameters:
+        - name: logLevel
+          value: DEBUG
+        - name: image.tag
+          value: dev
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: uws
+
+```
+
+Helm chart installation (alternative to ArgoCD)
+-----------------------------------------------
 
 The Helm chart for `uws-api-server` is in the Helm chart repo https://lsst-dm.github.io/charts/ (see that page for instructions on how to add the Helm repo and its charts).
 
@@ -94,4 +122,29 @@ users:
 Activate the kubeconfig prior to executing `helm` or `kubectl` with:
 ``` 
 export KUBECONFIG="$HOME/.kube/config.$TARGET_CLUSTER.proxy"
+```
+
+Local client to remote server
+--------------------------------
+
+There is an ingress included in the Helm chart that provides access to the API at for example `https://lsst-nts-k8s.ncsa.illinois.edu/dev-uws-server/api/v1`. This is [secured by basic HTTP auth](https://kubernetes.github.io/ingress-nginx/examples/auth/basic/) with a k8s Secret `uws-server-basic-auth` that is not provided by the chart. You must manually create this secret to use this secure development URL.
+
+```sh
+export BASICAUTHUSER=client
+export BASICAUTHPASS=$(openssl rand -hex 32)
+
+echo "The password is: $BASICAUTHPASS"
+
+cat <<EOF | kubectl -n uws apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: uws-server-basic-auth
+  annotations:
+    username: $BASICAUTHUSER
+    password: $BASICAUTHPASS
+type: Opaque
+data:
+  auth: $(htpasswd -nb client $BASICAUTHPASS | tr -d '\n' | base64)
+EOF
 ```
