@@ -3,6 +3,15 @@ Kubernetes Deployment
 
 The UWS currently supports deployment on the NCSA Test Stand (NTS) and the Summit. Common parameter values are captured in the `values.yaml` file of the Helm chart, while environment-specific values (primarily related to persistent volume configuration) are captured by `values-nts.yaml` and `values-summit.yaml`.
 
+Version control
+------------------------------
+
+The UWS application consists of [the Helm chart defining the deployment](https://github.com/lsst-dm/charts/tree/master/charts/uws-api-server) and the Docker images run by the containers. These are synchronized using the following versioning system:
+
+- When a stable update is made to the `uws-api-server` source code repo, the Docker image is built, tagged with an incremented version, and pushed. The repo commit is tagged with the same version. GitHub Actions automatically build the `latest` tagged image when the commit is pushed, but the specific version tags must be added and push manually via `docker tag` and `docker push`.
+
+- When a stable update is made to the `charts` Helm chart repo, the Helm chart version is incremented and the repo commit is tagged with the same version. The ArgoCD application should then be updated to reference that Helm chart version.
+
 ArgoCD
 ------------------------------
 
@@ -14,7 +23,9 @@ NTS:    https://lsst-argocd-nts-efd.ncsa.illinois.edu/argo-cd/applications/uws
 ```
 Credentials to access these ArgoCD instances is provided via the `https://lsstit.1password.com` password manager account.
 
-An example of the ArgoCD Application manifest is shown below:
+Examples of the ArgoCD Application manifest are shown below (production and development releases), demonstrating how the parameter values are set first by the `values.yaml` file, and then overridden by the `values-summit.yaml` file, and then overridden by the ``parameters`` section of the ``Application`` manifest itself. [Read more about overrides here](https://argo-cd.readthedocs.io/en/stable/user-guide/parameters/).
+
+### Production
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -29,20 +40,15 @@ spec:
   project: default
   source:
     helm:
-      parameters:
-      - name: logLevel
-        value: DEBUG
-      - name: image.tag
-        value: latest
       valueFiles:
       - values.yaml
       - values-summit.yaml
     path: charts/uws-api-server
     repoURL: https://github.com/lsst-dm/charts
-    targetRevision: master
+    targetRevision: v1.2.0
 ```
 
-And for a concurrent development release:
+### Development
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -124,27 +130,25 @@ Activate the kubeconfig prior to executing `helm` or `kubectl` with:
 export KUBECONFIG="$HOME/.kube/config.$TARGET_CLUSTER.proxy"
 ```
 
-Local client to remote server
---------------------------------
+Issues with Persistent Volumes
+------------------------------------
 
-There is an ingress included in the Helm chart that provides access to the API at for example `https://lsst-nts-k8s.ncsa.illinois.edu/dev-uws-server/api/v1`. This is [secured by basic HTTP auth](https://kubernetes.github.io/ingress-nginx/examples/auth/basic/) with a k8s Secret `uws-server-basic-auth` that is not provided by the chart. You must manually create this secret to use this secure development URL.
+The PV and PVC resources will not upgrade gracefully, because they are immutable when created. They must be deleted and then the ArgoCD app re-synced. However, in this process they will often get stuck in a Terminating state endlessly. To allow them to finish deleting, remove the finalizers by patching the resource definitions as shown in the example below for the PVCs. The same pattern works for the PVs.
 
 ```sh
-export BASICAUTHUSER=client
-export BASICAUTHPASS=$(openssl rand -hex 32)
+$ kubectl get -n uws pvc -l app=uws-uws-api-server
+NAME             STATUS        VOLUME                             CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+data-pvc         Terminating   uws-uws-api-server-data-pv         0                                        17h
+home-pvc         Terminating   uws-uws-api-server-home-pv         0                                        17h
+project-pvc      Terminating   uws-uws-api-server-project-pv      0                                        17h
+repo-pvc         Terminating   uws-uws-api-server-repo-pv         0                                        17h
+uws-server-pvc   Terminating   uws-uws-api-server-uws-server-pv   0                                        17h
 
-echo "The password is: $BASICAUTHPASS"
+$ kubectl patch -n uws pvc -p '{"metadata":{"finalizers":null}}' data-pvc home-pvc project-pvc repo-pvc uws-server-pvc
+persistentvolumeclaim/data-pvc patched
+persistentvolumeclaim/home-pvc patched
+persistentvolumeclaim/project-pvc patched
+persistentvolumeclaim/repo-pvc patched
+persistentvolumeclaim/uws-server-pvc patched
 
-cat <<EOF | kubectl -n uws apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: uws-server-basic-auth
-  annotations:
-    username: $BASICAUTHUSER
-    password: $BASICAUTHPASS
-type: Opaque
-data:
-  auth: $(htpasswd -nb client $BASICAUTHPASS | tr -d '\n' | base64)
-EOF
 ```

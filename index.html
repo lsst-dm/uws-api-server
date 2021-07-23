@@ -39,7 +39,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Development" href="Development.html" /> 
+    <link rel="next" title="OCPS Job Manager API" href="api/Readme.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -86,16 +86,6 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="Development.html">Development</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#documentation-system">Documentation system</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="Development.html#sphinx">Sphinx</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#file-editors-and-viewers">File editors and viewers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#development-environment">Development environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#source-code-sync-scripts">Source code sync scripts</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ocps_prototype.html">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#prototype">Prototype</a></li>
@@ -107,11 +97,35 @@
 <li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#jobs">Jobs</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="Development.html">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#network-access">Network access</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Development.html#step-1-vpn-access">Step 1: VPN access</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="Development.html#ncsanet-vpn">NCSAnet VPN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Development.html#lsst-vpn">LSST VPN</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="Development.html#step-2-ssh-access">Step 2: SSH access</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Development.html#step-3-kubectl-access">Step 3: kubectl access</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Development.html#step-4-source-code-repository-access">Step 4: Source code repository access</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#code-repo-structure">Code repo structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#source-code-sync-scripts">Source code sync scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#local-client-to-remote-api-server">Local client to remote API server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#documentation-system">Documentation system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#file-editors-and-viewers">File editors and viewers</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Deployment.html">Kubernetes Deployment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Deployment.html#argocd">ArgoCD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#version-control">Version control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#argocd">ArgoCD</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Deployment.html#production">Production</a></li>
+<li class="toctree-l3"><a class="reference internal" href="Deployment.html#development">Development</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="Deployment.html#helm-chart-installation-alternative-to-argocd">Helm chart installation (alternative to ArgoCD)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Deployment.html#kubectl-access">kubectl access</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Deployment.html#local-client-to-remote-server">Local client to remote server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#issues-with-persistent-volumes">Issues with Persistent Volumes</a></li>
 </ul>
 </li>
 </ul>
@@ -186,16 +200,16 @@
   <div class="section" id="uws-api-server-documentation">
 <h1>UWS API Server Documentation<a class="headerlink" href="#uws-api-server-documentation" title="Permalink to this headline">¶</a></h1>
 <p>This repo implements a Universal Worker Service (UWS) API server for the Vera C. Rubin Observatory Legacy Survey of Space and Time (LSST) to provide an asynchronous job management system that follows the <a class="reference external" href="https://www.ivoa.net/documents/UWS/">Universal Worker Service Pattern defined by the International Virtual Observatory Alliance</a>.</p>
+<div class="admonition-quick-start admonition">
+<p class="admonition-title">Quick Start</p>
+<p><strong>Developer Quick Start</strong></p>
+<p>If you are a developer new to the UWS system, get started quickly by following these steps:</p>
+<p>1. Familiarize yourself with the <a class="reference internal" href="#system-components"><span class="std std-ref">System components</span></a>.
+2.</p>
+</div>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="Development.html">Development</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#documentation-system">Documentation system</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#file-editors-and-viewers">File editors and viewers</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#development-environment">Development environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Development.html#source-code-sync-scripts">Source code sync scripts</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ocps_prototype.html">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#prototype">Prototype</a></li>
@@ -204,21 +218,31 @@
 <li class="toctree-l2"><a class="reference internal" href="ocps_prototype.html#jobs">Jobs</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="Development.html">Development</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#network-access">Network access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#code-repo-structure">Code repo structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#source-code-sync-scripts">Source code sync scripts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#local-client-to-remote-api-server">Local client to remote API server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#documentation-system">Documentation system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Development.html#file-editors-and-viewers">File editors and viewers</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Deployment.html">Kubernetes Deployment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#version-control">Version control</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Deployment.html#argocd">ArgoCD</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Deployment.html#helm-chart-installation-alternative-to-argocd">Helm chart installation (alternative to ArgoCD)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Deployment.html#kubectl-access">kubectl access</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Deployment.html#local-client-to-remote-server">Local client to remote server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Deployment.html#issues-with-persistent-volumes">Issues with Persistent Volumes</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section" id="system-components">
-<h2>System components<a class="headerlink" href="#system-components" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>System components<a class="headerlink" href="#system-components" title="Permalink to this headline">¶</a></h2>
 <p>The OCPS system consists of several components.</p>
 <div class="section" id="docker-images">
 <h3>Docker images<a class="headerlink" href="#docker-images" title="Permalink to this headline">¶</a></h3>
-<p>The source code repo <a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a> is used to build the Docker image of the UWS API server. GitHub Actions are used to automatically build the <code class="docutils literal notranslate"><span class="pre">latest</span></code> (<code class="docutils literal notranslate"><span class="pre">dev</span></code>) tagged image when commits are pushed to the <code class="docutils literal notranslate"><span class="pre">master</span></code> (<code class="docutils literal notranslate"><span class="pre">dev</span></code>) branch.</p>
+<p>The source code repo <a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a> is used to build the Docker image of the UWS API server. GitHub Actions are used to automatically build the <code class="docutils literal notranslate"><span class="pre">latest</span></code> tagged image when commits are pushed to the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch (and <code class="docutils literal notranslate"><span class="pre">dev</span></code> branch commits build <code class="docutils literal notranslate"><span class="pre">dev</span></code> tagged images).</p>
 </div>
 <div class="section" id="kubernetes-deployment">
 <h3>Kubernetes deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this headline">¶</a></h3>
@@ -251,7 +275,7 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="Development.html" class="btn btn-neutral float-right" title="Development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="api/Readme.html" class="btn btn-neutral float-right" title="OCPS Job Manager API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
