@@ -15,8 +15,8 @@ config = {
     'server': {
         'basePath': '/api/v1',
     },
-    'apiBaseUrl': 'https://lsst-nts-k8s.ncsa.illinois.edu/dev-uws-server/api/v1',
-    # 'apiBaseUrl': 'https://summit-lsp.lsst.codes/dev-uws-server/api/v1',
+    'apiBaseUrl': 'https://lsst-nts-k8s.ncsa.illinois.edu/uws-server/api/v1',
+    # 'apiBaseUrl': 'https://summit-lsp.lsst.codes/uws-server/api/v1',
     'auth': b64encode(bytes(f"{os.environ['UWS_USER_PASS']}", 'utf-8')).decode("ascii"),
 }
 auth_header = {'Authorization': f'Basic {config["auth"]}'}
