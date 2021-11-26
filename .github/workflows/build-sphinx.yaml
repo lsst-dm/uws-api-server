@@ -2,7 +2,7 @@ name: "Build Sphinx docs"
 on: 
   push:
     branches:
-      - master
+      - main
     paths:
     - 'docs/**'
 jobs:
