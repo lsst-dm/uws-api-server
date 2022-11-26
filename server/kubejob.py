@@ -231,8 +231,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             securityContext=config['job']['securityContext'],
             workingVolume=config['workingVolume'],
             volumes=config['volumes'],
-            butler_container_path=config['butler']['containerPath'],
-            butler_dbuser=config['butler']['dbUser']
+            butler=config.get('butler'),
         ))
         log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(
