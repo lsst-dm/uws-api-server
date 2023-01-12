@@ -9,8 +9,8 @@ spec:
   backoffLimit: {{ backoffLimit }}
   # activeDeadlineSeconds: {{ activeDeadlineSeconds }}
   # Reference: https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs
-  #   "Note that this TTL mechanism is alpha, with feature gate TTLAfterFinished. 
-  #   For more information, see the documentation for TTL controller for 
+  #   "Note that this TTL mechanism is alpha, with feature gate TTLAfterFinished.
+  #   For more information, see the documentation for TTL controller for
   #   finished resources."
   # ttlSecondsAfterFinished: 30
   template:
@@ -39,7 +39,7 @@ spec:
           emptyDir: {}
         {%- endif %}
       {%- endfor %}
-      {%- if butler %}
+      {%- if butler_pg %}
         - name: butler-secret
           emptyDir: {}
         - name: raw-butler-secret
@@ -89,7 +89,7 @@ spec:
           echo "Git repo is ready."
         {%- endif %}
           echo ""
-      {%- if butler %}
+      {%- if butler_pg %}
       - name: {{ container_name}}-butler-secret-perm-fix
         image: "alpine:latest"
         command:
@@ -110,13 +110,13 @@ spec:
       - name: {{ container_name }}
         image: {{ image.repository }}:{{ image.tag }}
         imagePullPolicy: {{ image.pull_policy }}
-        command: 
+        command:
         - '/bin/bash'
         - '-c'
         - {{ command }}
         env:
           {%- if clone_dir %}
-          # The "JOB_SOURCE_DIR" provides the job script with the path to the location 
+          # The "JOB_SOURCE_DIR" provides the job script with the path to the location
           # of the cloned git repo (optional).
           - name: "JOB_SOURCE_DIR"
             value: "{{ clone_dir }}"
@@ -137,12 +137,12 @@ spec:
           - name: "{{ env.name }}"
             value: "{{ env.value }}"
           {% endfor %}
-          {%- if butler %}
+          {%- if butler_pg %}
           - name: "PGPASSFILE"
-            value: "{{ butler.containerPath }}/postgres-credentials.txt"
+            value: "{{ butler_pg.containerPath }}/postgres-credentials.txt"
           - name: "PGUSER"
-            value: "{{ butler.dbUser }}"
-        {%- endif %}
+            value: "{{ butler_pg.dbUser }}"
+          {%- endif %}
         volumeMounts:
           - name: "{{ workingVolume.name }}"
             mountPath: "{{ workingVolume.mountPath }}"
@@ -153,7 +153,7 @@ spec:
             subPath: "{{ volume.subPath }}"
             readOnly: {{ volume.readOnly }}
         {%- endfor %}
-        {%- if butler %}
+        {%- if butler_pg %}
           - name: butler-secret
-            mountPath: "{{ butler.containerPath }}"
+            mountPath: "{{ butler_pg.containerPath }}"
         {%-endif %}
