@@ -83,12 +83,12 @@ def list_jobs(job_id=None):
         namespace = get_namespace()
         if job_id:
             api_response = api_batch_v1.list_namespaced_job(
-                namespace=namespace, 
+                namespace=namespace,
                 label_selector=f'jobId={job_id}',
             )
         else:
             api_response = api_batch_v1.list_namespaced_job(
-                namespace=namespace, 
+                namespace=namespace,
                 label_selector=f'type=uws-job',
             )
         for item in api_response.items:
@@ -138,7 +138,7 @@ def delete_job(job_id):
         job_name = get_job_name_from_id(job_id)
         body = client.V1DeleteOptions(propagation_policy='Background')
         api_response = api_batch_v1.delete_namespaced_job(
-            namespace=namespace, 
+            namespace=namespace,
             name=job_name,
             body=body,
         )
@@ -147,7 +147,7 @@ def delete_job(job_id):
         response['code']    = api_response.code if api_response.code else response['code']
     except ApiException as e:
         msg = str(e)
-        response['message'] = msg 
+        response['message'] = msg
         if msg.startswith('(404)'):
             response['code'] = global_vars.HTTP_NOT_FOUND
         else:
@@ -191,7 +191,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             clone_dir = os.path.join(job_root_dir, 'src')
         else:
             clone_dir = None
-        
+
         # Set environment-specific configuration for Job definition
         templateFile = "job.tpl.yaml"
         project_subpath = ''
@@ -199,7 +199,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
         for envvar in environment:
             if envvar['name'] == 'UWS_JOB_IMAGE_TAG':
                 image_tag = envvar['value']
-        
+
         with open(os.path.join(os.path.dirname(__file__), templateFile)) as f:
             templateText = f.read()
         template = Template(templateText)
@@ -213,7 +213,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             container_name='uws-job',
             # CAUTION: Discrepancy between the UID of the image user and the UWS API server UID
             #          will create permissions problems. For example, if the job UID is 1001 and
-            #          the server UID is 1000, then files created by the job will not in general 
+            #          the server UID is 1000, then files created by the job will not in general
             #          allow the server to delete them when cleaning up deleted jobs.
             image={
                 'repository': config['job']['image']['repository'],
@@ -231,8 +231,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             securityContext=config['job']['securityContext'],
             workingVolume=config['workingVolume'],
             volumes=config['volumes'],
-            butler_container_path=config['butler']['containerPath'],
-            butler_dbuser=config['butler']['dbUser']
+            butler_pg=config.get('butlerPg'),
         ))
         log.debug("Job {}:\n{}".format(job_name, yaml.dump(job_body, indent=2)))
         api_response = api_batch_v1.create_namespaced_job(
