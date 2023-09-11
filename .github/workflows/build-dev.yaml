@@ -1,9 +1,7 @@
 name: "Build lsstdm/uws-api-server:dev"
 
 on:
-  push:
-    branches:
-      - 'dev'
+  pull_request:
     paths:
     - '.github/workflows/build-dev.yaml'
     - 'Dockerfile'
