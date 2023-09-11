@@ -7,16 +7,13 @@ spec:
   completions: {{ replicas }}
   parallelism: {{ replicas }}
   backoffLimit: {{ backoffLimit }}
-  # activeDeadlineSeconds: {{ activeDeadlineSeconds }}
-  # Reference: https://kubernetes.io/docs/concepts/workloads/controllers/job/#ttl-mechanism-for-finished-jobs
-  #   "Note that this TTL mechanism is alpha, with feature gate TTLAfterFinished.
-  #   For more information, see the documentation for TTL controller for
-  #   finished resources."
-  # ttlSecondsAfterFinished: 30
+  activeDeadlineSeconds: {{ activeDeadlineSeconds }}
+  ttlSecondsAfterFinished: {{ ttlSecondsAfterFinished }}
   template:
     metadata:
       labels:
         type: "uws-job"
+        argocd.argoproj.io/instance: "ocps-uws-job"
         jobId: "{{ jobId }}"
         runId: "{{ runId }}"
     spec:
@@ -25,6 +22,7 @@ spec:
         runAsUser: {{ securityContext['runAsUser'] }}
         runAsGroup: {{ securityContext['runAsGroup'] }}
         fsGroup: {{ securityContext['fsGroup'] }}
+        privileged: false
       volumes:
         # Volume to host job data
         - name: "{{ workingVolume['name'] }}"
@@ -114,6 +112,13 @@ spec:
         - '/bin/bash'
         - '-c'
         - {{ command }}
+        resources:
+          limits:
+            cpu: 8
+            memory: 32Gi
+          requests:
+            cpu: 1
+            memory: 4Gi
         env:
           {%- if clone_dir %}
           # The "JOB_SOURCE_DIR" provides the job script with the path to the location

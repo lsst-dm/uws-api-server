@@ -226,6 +226,8 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             clone_dir=clone_dir if clone_dir else '',
             commit_ref=commit_ref if commit_ref else '',
             uws_root_dir=config['workingVolume']['mountPath'],
+            activeDeadlineSeconds=config.get('activeDeadlineSeconds', "3600"),
+            ttlSecondsAfterFinished=config.get('ttlSecondsAfterFinished', "86400"),
             job_output_dir=job_output_dir,
             project_subpath=project_subpath,
             securityContext=config['job']['securityContext'],
