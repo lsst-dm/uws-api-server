@@ -3,6 +3,9 @@ kind: Job
 metadata:
   name: {{ name }}
   namespace: {{ namespace }}
+  annotations:
+    argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+    argocd.argoproj.io/sync-options: "Prune=false"
 spec:
   completions: {{ replicas }}
   parallelism: {{ replicas }}
