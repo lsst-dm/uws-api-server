@@ -24,9 +24,9 @@ except:
     log.setLevel('WARNING')
 
 kubeconfig.load_incluster_config()
-configuration = client.Configuration()
-api_batch_v1 = client.BatchV1Api(client.ApiClient(configuration))
-api_v1 = client.CoreV1Api(client.ApiClient(configuration))
+_ = client.Configuration()
+api_batch_v1 = client.BatchV1Api()
+api_v1 = client.CoreV1Api()
 
 def get_namespace():
     # When running in a pod, the namespace should be determined automatically,
