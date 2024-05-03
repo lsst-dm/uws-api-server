@@ -1,6 +1,6 @@
 name: Check Python formatting
 
-on:
+"on":
   push:
     branches:
       - main

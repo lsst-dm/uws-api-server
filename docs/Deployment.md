@@ -81,13 +81,13 @@ Helm chart installation (alternative to ArgoCD)
 
 The Helm chart for `uws-api-server` is in the Helm chart repo https://lsst-dm.github.io/charts/ (see that page for instructions on how to add the Helm repo and its charts).
 
-To install via Helm, you can clone the source repo (https://github.com/lsst-dm/charts/) and install with 
+To install via Helm, you can clone the source repo (https://github.com/lsst-dm/charts/) and install with
 
 ```
 helm upgrade --install -n $NAMESPACE \
   uws-api-server charts/uws-api-server/ \
   --values charts/uws-api-server/values.yaml \
-  --values charts/uws-api-server/values-$CLUSTER.yaml 
+  --values charts/uws-api-server/values-$CLUSTER.yaml
 ```
 
 where `values-$CLUSTER.yaml` is the values file specific to the target cluster.
@@ -126,7 +126,7 @@ users:
 ```
 
 Activate the kubeconfig prior to executing `helm` or `kubectl` with:
-``` 
+```
 export KUBECONFIG="$HOME/.kube/config.$TARGET_CLUSTER.proxy"
 ```
 

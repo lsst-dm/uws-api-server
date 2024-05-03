@@ -1,7 +1,7 @@
 ---
 name: Check that 'main' is not merged into the development branch
 
-on: pull_request
+"on": pull_request
 
 jobs:
   call-workflow:
