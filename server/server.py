@@ -99,7 +99,7 @@ class BaseHandler(tornado.web.RequestHandler):
     # The datetime type is not JSON serializable, so convert to string
     def json_converter(self, o):
         if isinstance(o, datetime):
-            return o.__str__()
+            return str(o)
 
     def send_response(self, data, http_status_code=global_vars.HTTP_OK, return_json=True, indent=None):
         if return_json:
@@ -128,7 +128,7 @@ def construct_job_object(job_info):
         destructionTime = None  # TODO: Should we track deletion time?
         try:
             executionDuration = (endTime - startTime).total_seconds()
-        except AttributeError:
+        except Exception:
             executionDuration = None
         try:
             message = job_info["message"]

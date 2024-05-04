@@ -248,10 +248,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
             )
         )
         log.debug(f"Job {job_name}:\n{yaml.dump(job_body, indent=2)}")
-        # api_response = api_batch_v1.create_namespaced_job(
-        # namespace=namespace,
-        # body=job_body
-        # )
+        _ = api_batch_v1.create_namespaced_job(namespace=namespace, body=job_body)
         response["job_id"] = job_id
         log.debug(f"Job {job_name} created")
     # TODO: Is there additional information to obtain from the ApiException?
