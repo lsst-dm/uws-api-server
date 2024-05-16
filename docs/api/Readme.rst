@@ -1,7 +1,7 @@
 OCPS Job Manager API
 ============================================
 
-The OCSP Job Manager API spec is documented using the `OpenAPI <https://swagger.io/specification/>`_ format: :download:`ocps_job_manager.openapi.yaml.js`. 
+The OCSP Job Manager API spec is documented using the `OpenAPI <https://swagger.io/specification/>`_ format: :download:`ocps_job_manager.openapi.yaml.js`.
 
 Browse the `API spec using the Swagger UI <spec.html>`_.
 

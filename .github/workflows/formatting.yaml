@@ -1,0 +1,33 @@
+name: formatting
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install isort and black
+        run: pip install isort black
+
+      - name: Run isort
+        run: |
+          isort --df --check-only \
+               $(test -e client/ && echo 'client/') \
+               $(test -e server/ && echo 'server/')
+
+      - name: Run black
+        run: |
+          black --check --verbose --diff \
+               $(test -e client/ && echo 'client/') \
+               $(test -e server/ && echo 'server/')

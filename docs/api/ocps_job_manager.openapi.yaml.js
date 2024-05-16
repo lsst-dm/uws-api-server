@@ -189,7 +189,7 @@ paths:
           description: successful operation
           content:
             '*/*':
-              schema: 
+              schema:
                 type: string
                 format: binary
         "400":
@@ -256,10 +256,10 @@ components:
       properties:
         command:
           type: array
-          description: Command to execute 
+          description: Command to execute
           items:
             type: string
-            example: 
+            example:
             - /bin/sh
             - -c
             - sleep 1d

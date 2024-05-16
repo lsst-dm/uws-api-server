@@ -16,7 +16,7 @@ pipetask run -p ${PIPELINE_YAML} \
     -o "${OUTPUT_COLLECTION}" \
     --output-run "${OUTPUT_COLLECTION}/run" \
     -d "${DATA_QUERY}"
-    
+
 export paths=$(butler query-datasets --collections $OUTPUT_COLLECTION/run $BUTLER_CONFIG "metricvalue_*" | sed -e 's/.*file:([^ ]*) .*/\1/')
 
 cp $paths $JOB_OUTPUT_DIR
