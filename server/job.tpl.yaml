@@ -102,8 +102,7 @@ spec:
           - "-c"
           - |
             {%- if s3_butler_storage %}
-            cat /secrets-raw/butler-credentials.ini >> /secrets-raw/aws-credentials.ini
-            cp -RL /secrets-raw/aws-credentials.ini /secrets
+            cat /secrets-raw/butler-credentials.ini >> /secrets/aws-credentials.ini
             {%- endif %}
             cp -RL /secrets-raw/postgres-credentials.txt /secrets
             chown {{ securityContext['runAsUser'] }}:{{ securityContext['runAsGroup'] }} /secrets/*
@@ -160,7 +159,7 @@ spec:
             value: "{{ butler_pg.dbUser }}"
           {%- endif %}
           {%- if s3_butler_storage %}
-          - name: "AWS_SHARED_CREDENTIAL_FILE"
+          - name: "AWS_SHARED_CREDENTIALS_FILE"
             value: "{{ s3_butler_storage.containerPath }}/aws-credentials.ini"
           - name: "AWS_REQUEST_CHECKSUM_CALCULATION"
             value: "WHEN_REQUIRED"
