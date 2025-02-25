@@ -152,6 +152,8 @@ spec:
           - name: "{{ env.name }}"
             value: "{{ env.value }}"
           {% endfor %}
+          - name: "DAF_BUTLER_REPOSITORY_INDEX"
+            value: "/project/data-repos.yaml"
           {%- if butler_pg %}
           - name: "PGPASSFILE"
             value: "{{ butler_pg.containerPath }}/postgres-credentials.txt"
