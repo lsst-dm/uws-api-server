@@ -202,11 +202,17 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
 
         # Set environment-specific configuration for Job definition
         templateFile = "job.tpl.yaml"
+        job_resources = None
         project_subpath = ""
         image_tag = config["job"]["image"]["tag"]
         for envvar in environment:
             if envvar["name"] == "UWS_JOB_IMAGE_TAG":
                 image_tag = envvar["value"]
+            if envvar["name"] == "BUTLER_REPO":
+                try:
+                    job_resources = config["jobResources"][envvar["value"].lower]
+                except KeyError:
+                    pass
 
         with open(os.path.join(os.path.dirname(__file__), templateFile)) as f:
             templateText = f.read()
@@ -246,6 +252,7 @@ def create_job(command, run_id=None, url=None, commit_ref=None, replicas=1, envi
                 volumes=config["volumes"],
                 butler_pg=config.get("butlerPg"),
                 s3_butler_storage=config.get("s3ButlerStorage"),
+                job_resources=job_resources,
             )
         )
         log.debug(f"Job {job_name}:\n{yaml.dump(job_body, indent=2)}")
