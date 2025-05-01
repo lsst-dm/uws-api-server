@@ -37,7 +37,7 @@ The prototype client (the ``client/client.py`` module) provides some wrapper fun
 Jobs
 ----------------------
 
-Jobs run as Kubernetes Jobs. The container image for each job is the ``lsstsqre/centos:d_latest`` Docker image.
+Jobs run as Kubernetes Jobs. The container image for each job is the ``ghcr.io/lsst/scipipe:d_latest`` Docker image.
 
 There are environment variables set for all jobs for use by executing scripts:
 
