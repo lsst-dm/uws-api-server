@@ -1,18 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rubin OCS Controlled Pipeline System (OCPS) prototype &mdash; UWS API Server  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
+  <title>Rubin OCS Controlled Pipeline System (OCPS) prototype &mdash; UWS API Server  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -25,17 +28,21 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> UWS API Server
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UWS API Server
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
@@ -94,8 +101,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Rubin OCS Controlled Pipeline System (OCPS) prototype</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Rubin OCS Controlled Pipeline System (OCPS) prototype</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/lsst-dm/uws-api-server/blob/master/docs/ocps_prototype.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -105,10 +112,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="rubin-ocs-controlled-pipeline-system-ocps-prototype">
-<h1>Rubin OCS Controlled Pipeline System (OCPS) prototype<a class="headerlink" href="#rubin-ocs-controlled-pipeline-system-ocps-prototype" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="prototype">
-<h2>Prototype<a class="headerlink" href="#prototype" title="Permalink to this headline">¶</a></h2>
+  <section id="rubin-ocs-controlled-pipeline-system-ocps-prototype">
+<h1>Rubin OCS Controlled Pipeline System (OCPS) prototype<a class="headerlink" href="#rubin-ocs-controlled-pipeline-system-ocps-prototype" title="Permalink to this heading"></a></h1>
+<section id="prototype">
+<h2>Prototype<a class="headerlink" href="#prototype" title="Permalink to this heading"></a></h2>
 <img alt="_images/Prompt_processing_architecture_sketch.png" src="_images/Prompt_processing_architecture_sketch.png" />
 <p>The prototype OCPS Job Manager is designed as an evolving demonstration of the emerging system.</p>
 <p>The prototype consists of a server and a client.</p>
@@ -117,26 +124,26 @@
 <li><p>The client represents the OCPS CSC that will ultimately be submitting jobs and fetching the results. The client is a Python script that could in principle be executed on any machine that can access the OCPS Job Manager HTTP port.</p></li>
 </ul>
 <p>Currently the prototype can be deployed on the NCSA Test Stand (NTS) and NCSA Integration (INT) Kubernetes clusters.</p>
-</div>
-<div class="section" id="server-ocps-job-manager">
-<h2>Server - OCPS Job Manager<a class="headerlink" href="#server-ocps-job-manager" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="server-ocps-job-manager">
+<h2>Server - OCPS Job Manager<a class="headerlink" href="#server-ocps-job-manager" title="Permalink to this heading"></a></h2>
 <p>The OCPS Job Manager is the <code class="docutils literal notranslate"><span class="pre">server/server.py</span></code> module, which implements a Universal Worker Service (UWS) API server to provide an asynchronous job management system that follows the <a class="reference external" href="https://www.ivoa.net/documents/UWS/">Universal Worker Service Pattern defined by the International Virtual Observatory Alliance</a>.</p>
-<div class="section" id="job-manager-api-specification">
-<h3>Job Manager API Specification<a class="headerlink" href="#job-manager-api-specification" title="Permalink to this headline">¶</a></h3>
+<section id="job-manager-api-specification">
+<h3>Job Manager API Specification<a class="headerlink" href="#job-manager-api-specification" title="Permalink to this heading"></a></h3>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For the definition of the API spec, see <a class="reference internal" href="api/Readme.html"><span class="doc">OCPS Job Manager API</span></a>. <strong>This may not reflect the current prototype.</strong></p>
 </div>
-</div>
-</div>
-<div class="section" id="client-ocsp-csc">
-<h2>Client - OCSP CSC<a class="headerlink" href="#client-ocsp-csc" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="client-ocsp-csc">
+<h2>Client - OCSP CSC<a class="headerlink" href="#client-ocsp-csc" title="Permalink to this heading"></a></h2>
 <p>As currently envisioned, the data (e.g. camera images) that form the input to the prompt processing jobs will be transferred from the OCS by an independent system; thus the input data is assumed to be accessible to the UWS as a Butler repo residing on some locally mounted storage.</p>
 <p>The prototype client (the <code class="docutils literal notranslate"><span class="pre">client/client.py</span></code> module) provides some wrapper functions around the API server endpoints, as well as a demo of some HTTP requests that create and manage jobs.</p>
-</div>
-<div class="section" id="jobs">
-<h2>Jobs<a class="headerlink" href="#jobs" title="Permalink to this headline">¶</a></h2>
-<p>Jobs run as Kubernetes Jobs. The container image for each job is the <code class="docutils literal notranslate"><span class="pre">lsstsqre/centos:d_latest</span></code> Docker image.</p>
+</section>
+<section id="jobs">
+<h2>Jobs<a class="headerlink" href="#jobs" title="Permalink to this heading"></a></h2>
+<p>Jobs run as Kubernetes Jobs. The container image for each job is selected by configuration.</p>
 <p>There are environment variables set for all jobs for use by executing scripts:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">$JOB_ID</span></code> - provides the job script with the UUID associated with the job.</p></li>
@@ -280,8 +287,8 @@ Response:
 <span class="p">(</span><span class="n">requested</span> <span class="n">file</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

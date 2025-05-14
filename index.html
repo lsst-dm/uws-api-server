@@ -1,18 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UWS API Server Documentation &mdash; UWS API Server  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
+  <title>UWS API Server Documentation &mdash; UWS API Server  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -24,17 +27,21 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#" class="icon icon-home"> UWS API Server
+
+          
+          
+          <a href="#" class="icon icon-home">
+            UWS API Server
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ocps_prototype.html">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
@@ -93,8 +100,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
-      <li>UWS API Server Documentation</li>
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">UWS API Server Documentation</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/lsst-dm/uws-api-server/blob/master/docs/index.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -104,8 +111,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="uws-api-server-documentation">
-<h1>UWS API Server Documentation<a class="headerlink" href="#uws-api-server-documentation" title="Permalink to this headline">¶</a></h1>
+  <section id="uws-api-server-documentation">
+<h1>UWS API Server Documentation<a class="headerlink" href="#uws-api-server-documentation" title="Permalink to this heading"></a></h1>
 <p>This repo implements a Universal Worker Service (UWS) API server for the Vera C. Rubin Observatory Legacy Survey of Space and Time (LSST) to provide an asynchronous job management system that follows the <a class="reference external" href="https://www.ivoa.net/documents/UWS/">Universal Worker Service Pattern defined by the International Virtual Observatory Alliance</a>.</p>
 <div class="admonition-quick-start admonition">
 <p class="admonition-title">Quick Start</p>
@@ -115,7 +122,7 @@
 2.</p>
 </div>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ocps_prototype.html">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
@@ -144,24 +151,24 @@
 </li>
 </ul>
 </div>
-<div class="section" id="system-components">
-<span id="id1"></span><h2>System components<a class="headerlink" href="#system-components" title="Permalink to this headline">¶</a></h2>
+<section id="system-components">
+<span id="id1"></span><h2>System components<a class="headerlink" href="#system-components" title="Permalink to this heading"></a></h2>
 <p>The OCPS system consists of several components.</p>
-<div class="section" id="docker-images">
-<h3>Docker images<a class="headerlink" href="#docker-images" title="Permalink to this headline">¶</a></h3>
+<section id="docker-images">
+<h3>Docker images<a class="headerlink" href="#docker-images" title="Permalink to this heading"></a></h3>
 <p>The source code repo <a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a> is used to build the Docker image of the UWS API server. GitHub Actions are used to automatically build the <code class="docutils literal notranslate"><span class="pre">latest</span></code> tagged image when commits are pushed to the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch (and <code class="docutils literal notranslate"><span class="pre">dev</span></code> branch commits build <code class="docutils literal notranslate"><span class="pre">dev</span></code> tagged images).</p>
-</div>
-<div class="section" id="kubernetes-deployment">
-<h3>Kubernetes deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="kubernetes-deployment">
+<h3>Kubernetes deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this heading"></a></h3>
 <p>The Kubernetes deployment is defined by a Helm chart in the Helm repo <a class="reference external" href="https://lsst-dm.github.io/charts">https://lsst-dm.github.io/charts</a>. Releases of this Helm chart are deployed on the NTS and Summit clusters via ArgoCD apps. See <a class="reference internal" href="Deployment.html"><span class="doc">Kubernetes Deployment</span></a> for details.</p>
-</div>
-<div class="section" id="documentation">
-<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h3>
 <p>This documentation is automatically built and published using GitHub Actions and GitHub pages. There is a workflow definition file in <code class="docutils literal notranslate"><span class="pre">/.github/workflows/</span></code> that creates a GitHub Action that triggers the build process whenever there is a push to the <cite>master</cite> branch. See <a class="reference internal" href="Development.html"><span class="doc">Development</span></a> for details.</p>
-</div>
-</div>
-<div class="section" id="links">
-<h2>Links<a class="headerlink" href="#links" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="links">
+<h2>Links<a class="headerlink" href="#links" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://dmtn-133.lsst.io">DMTN-133: OCS driven data processing</a></p></li>
 <li><p><a class="reference external" href="https://dmtn-143.lsst.io">DMTN-143: Image Capture Simplification</a></p></li>
@@ -173,8 +180,8 @@
 <li><p><a class="reference external" href="https://github.com/aipescience/uws-client">https://github.com/aipescience/uws-client</a></p></li>
 <li><p><a class="reference external" href="https://github.com/kristinriebe/uws-validator">https://github.com/kristinriebe/uws-validator</a></p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

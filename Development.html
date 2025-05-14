@@ -1,18 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Development &mdash; UWS API Server  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
+  <title>Development &mdash; UWS API Server  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -25,17 +28,21 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> UWS API Server
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UWS API Server
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ocps_prototype.html">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
@@ -94,8 +101,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Development</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Development</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/lsst-dm/uws-api-server/blob/master/docs/Development.md" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -105,28 +112,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="development">
-<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="network-access">
-<h2>Network access<a class="headerlink" href="#network-access" title="Permalink to this headline">¶</a></h2>
+  <section id="development">
+<h1>Development<a class="headerlink" href="#development" title="Permalink to this heading"></a></h1>
+<section id="network-access">
+<h2>Network access<a class="headerlink" href="#network-access" title="Permalink to this heading"></a></h2>
 <p>Before you can develop and deploy, you must first configure your workstation to gain access to the target networks and platforms.</p>
-<div class="section" id="step-1-vpn-access">
-<h3>Step 1: VPN access<a class="headerlink" href="#step-1-vpn-access" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="ncsanet-vpn">
-<h4>NCSAnet VPN<a class="headerlink" href="#ncsanet-vpn" title="Permalink to this headline">¶</a></h4>
+<section id="step-1-vpn-access">
+<h3>Step 1: VPN access<a class="headerlink" href="#step-1-vpn-access" title="Permalink to this heading"></a></h3>
+<section id="ncsanet-vpn">
+<h4>NCSAnet VPN<a class="headerlink" href="#ncsanet-vpn" title="Permalink to this heading"></a></h4>
 <p>Access to the NTS and Integration clusters requires use of the NCSAnet VPN. Install the Cisco Anyconnect compatible <code class="docutils literal notranslate"><span class="pre">openconnect</span></code> package and open the network settings.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo apt-get install network-manager-openconnect-gnome 
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>network-manager-openconnect-gnome
 </pre></div>
 </div>
 <p>Add a new VPN with gateway <code class="docutils literal notranslate"><span class="pre">sslvpn.ncsa.illinois.edu</span></code> and protocol “Cisco AnyConnect”. The defaults for the rest are fine. Enable the VPN and choose the group “ncsa-vpn-default”. Enter your NCSA username and password. The second password is either (1) a code generated by your 2FA hardware key or (2) the literal word “push”, which then triggers your Duo 2FA app.</p>
-</div>
-<div class="section" id="lsst-vpn">
-<h4>LSST VPN<a class="headerlink" href="#lsst-vpn" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="lsst-vpn">
+<h4>LSST VPN<a class="headerlink" href="#lsst-vpn" title="Permalink to this heading"></a></h4>
 <p>Access to the Summit cluster requires the LSST VPN. <a class="reference external" href="https://confluence.lsstcorp.org/display/IT/How+to+create+an+IPA+Account?preview=/125243540/125243933/VPN%20DOC.pdf">Follow the instructions in this PDF document</a>.</p>
-</div>
-</div>
-<div class="section" id="step-2-ssh-access">
-<h3>Step 2: SSH access<a class="headerlink" href="#step-2-ssh-access" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="step-2-ssh-access">
+<h3>Step 2: SSH access<a class="headerlink" href="#step-2-ssh-access" title="Permalink to this heading"></a></h3>
 <p>Configure your local workstation according to the SSH instructions at
 <a class="reference external" href="https://developer.lsst.io/services/lsst-login.html#lsst-login-connect">https://developer.lsst.io/services/lsst-login.html#lsst-login-connect</a>.
 Install <code class="docutils literal notranslate"><span class="pre">kinit</span></code> and execute this first:</p>
@@ -160,24 +167,24 @@ Install <code class="docutils literal notranslate"><span class="pre">kinit</span
 </pre></div>
 </div>
 <p>Determine the IP address of the Kubernetes API server, either by documentation or a technique like this example using <code class="docutils literal notranslate"><span class="pre">ping</span></code>, where <code class="docutils literal notranslate"><span class="pre">lsst-nts-kubh01.ncsa.illinois.edu</span></code> is the NTS cluster API server hostname:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ ping -c <span class="m">1</span> lsst-nts-kubh01.ncsa.illinois.edu
-PING lsst-nts-kubh01.ncsa.illinois.edu <span class="o">(</span><span class="m">141</span>.142.238.20<span class="o">)</span> <span class="m">56</span><span class="o">(</span><span class="m">84</span><span class="o">)</span> bytes of data.
-<span class="m">64</span> bytes from lsst-nts-kubh01.ncsa.illinois.edu <span class="o">(</span><span class="m">141</span>.142.238.20<span class="o">)</span>: <span class="nv">icmp_seq</span><span class="o">=</span><span class="m">1</span> <span class="nv">ttl</span><span class="o">=</span><span class="m">59</span> <span class="nv">time</span><span class="o">=</span><span class="m">15</span>.7 ms
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>ping<span class="w"> </span>-c<span class="w"> </span><span class="m">1</span><span class="w"> </span>lsst-nts-kubh01.ncsa.illinois.edu
+PING<span class="w"> </span>lsst-nts-kubh01.ncsa.illinois.edu<span class="w"> </span><span class="o">(</span><span class="m">141</span>.142.238.20<span class="o">)</span><span class="w"> </span><span class="m">56</span><span class="o">(</span><span class="m">84</span><span class="o">)</span><span class="w"> </span>bytes<span class="w"> </span>of<span class="w"> </span>data.
+<span class="m">64</span><span class="w"> </span>bytes<span class="w"> </span>from<span class="w"> </span>lsst-nts-kubh01.ncsa.illinois.edu<span class="w"> </span><span class="o">(</span><span class="m">141</span>.142.238.20<span class="o">)</span>:<span class="w"> </span><span class="nv">icmp_seq</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">ttl</span><span class="o">=</span><span class="m">59</span><span class="w"> </span><span class="nv">time</span><span class="o">=</span><span class="m">15</span>.7<span class="w"> </span>ms
 </pre></div>
 </div>
 <p>Establish an SSH tunnel as shown below, authenticating with your password and Duo 2FA, forwarding the Kubernetes API server port <code class="docutils literal notranslate"><span class="pre">6443</span></code> to localhost. This will allow <code class="docutils literal notranslate"><span class="pre">kubectl</span></code> to connect through the firewall. Replace <code class="docutils literal notranslate"><span class="pre">141.142.X.Y</span></code> with the IP address of the API server.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>ssh -L <span class="m">127</span>.0.0.1:6443:141.142.X.Y:6443 lsst-login
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>ssh<span class="w"> </span>-L<span class="w"> </span><span class="m">127</span>.0.0.1:6443:141.142.X.Y:6443<span class="w"> </span>lsst-login
 </pre></div>
 </div>
-</div>
-<div class="section" id="step-3-kubectl-access">
-<h3>Step 3: kubectl access<a class="headerlink" href="#step-3-kubectl-access" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="step-3-kubectl-access">
+<h3>Step 3: kubectl access<a class="headerlink" href="#step-3-kubectl-access" title="Permalink to this heading"></a></h3>
 <p>A cluster admin will provide you with a kubeconfig file that <code class="docutils literal notranslate"><span class="pre">kubectl</span></code> uses for authentication. The example below assumes you have such a kubeconfig for the NCSA Test Stand (<code class="docutils literal notranslate"><span class="pre">nts</span></code>) stored in ``$HOME/.kube/config.nts-cluster<code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">Copy</span> <span class="pre">this</span> <span class="pre">kubeconfig</span> <span class="pre">file</span> <span class="pre">to</span> </code>$HOME/.kube/config.nts-cluster.proxy<code class="docutils literal notranslate"><span class="pre">,</span> <span class="pre">replacing</span> <span class="pre">the</span> <span class="pre">server</span> <span class="pre">URL</span> <span class="pre">as</span> <span class="pre">shown</span> <span class="pre">below</span> <span class="pre">and</span> <span class="pre">adding</span> <span class="pre">the</span> </code>insecure-skip-tls-verify: true` option due to the SSH tunnel.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">apiVersion</span><span class="p">:</span> <span class="n">v1</span>
 <span class="n">clusters</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">cluster</span><span class="p">:</span>
     <span class="n">insecure</span><span class="o">-</span><span class="n">skip</span><span class="o">-</span><span class="n">tls</span><span class="o">-</span><span class="n">verify</span><span class="p">:</span> <span class="n">true</span>
-    <span class="n">server</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">6443</span>
+    <span class="n">server</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0.0.1</span><span class="p">:</span><span class="mi">6443</span>
   <span class="n">name</span><span class="p">:</span> <span class="n">nts</span><span class="o">-</span><span class="n">cluster</span>
 <span class="n">contexts</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">context</span><span class="p">:</span>
@@ -198,19 +205,19 @@ PING lsst-nts-kubh01.ncsa.illinois.edu <span class="o">(</span><span class="m">1
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">KUBECONFIG</span><span class="o">=</span><span class="s2">&quot;$HOME/.kube/config.nts-cluster.proxy&quot;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="step-4-source-code-repository-access">
-<h3>Step 4: Source code repository access<a class="headerlink" href="#step-4-source-code-repository-access" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="step-4-source-code-repository-access">
+<h3>Step 4: Source code repository access<a class="headerlink" href="#step-4-source-code-repository-access" title="Permalink to this heading"></a></h3>
 <p>The source code repos are publicly available, but to push changes you will need to be added to the relevant groups.</p>
-</div>
-</div>
-<div class="section" id="code-repo-structure">
-<h2>Code repo structure<a class="headerlink" href="#code-repo-structure" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="code-repo-structure">
+<h2>Code repo structure<a class="headerlink" href="#code-repo-structure" title="Permalink to this heading"></a></h2>
 <p>There are two subfolders <code class="docutils literal notranslate"><span class="pre">client</span></code> and <code class="docutils literal notranslate"><span class="pre">server</span></code> that contain the code for the client and server, respectively. The server is the UWS API server. The client is an optional second deployment provided for testing the server from within the cluster. (See the section below that describes how to connect to the UWS server from outside the cluster.)</p>
 <p>The Docker image defining both of these deployments is defined by the <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> at the repo root, and the deployment definitions specify a container command like <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">server</span> <span class="pre">&amp;&amp;</span> <span class="pre">python3</span> <span class="pre">server.py</span></code> which actually starts the Tornado webserver.</p>
-</div>
-<div class="section" id="source-code-sync-scripts">
-<h2>Source code sync scripts<a class="headerlink" href="#source-code-sync-scripts" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="source-code-sync-scripts">
+<h2>Source code sync scripts<a class="headerlink" href="#source-code-sync-scripts" title="Permalink to this heading"></a></h2>
 <p>To rapidly iterate on code, use the sync scripts to push local files
 into the running containers. To update the UWS server, from the root
 directory of your clone of <a class="reference external" href="https://github.com/lsst-dm/uws-api-server">https://github.com/lsst-dm/uws-api-server</a>,
@@ -224,19 +231,19 @@ pod is deployed and <code class="docutils literal notranslate"><span class="pre"
 </pre></div>
 </div>
 <p>For example, if you had a development release deployed with pod label <code class="docutils literal notranslate"><span class="pre">app=dev-uws-server</span></code> you would execute</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>./k8s_sync_server.sh uws dev-uws-server
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>./k8s_sync_server.sh<span class="w"> </span>uws<span class="w"> </span>dev-uws-server
 </pre></div>
 </div>
-</div>
-<div class="section" id="local-client-to-remote-api-server">
-<h2>Local client to remote API server<a class="headerlink" href="#local-client-to-remote-api-server" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="local-client-to-remote-api-server">
+<h2>Local client to remote API server<a class="headerlink" href="#local-client-to-remote-api-server" title="Permalink to this heading"></a></h2>
 <p>There is an ingress included in the Helm chart that provides access to the API at for example <code class="docutils literal notranslate"><span class="pre">https://lsst-nts-k8s.ncsa.illinois.edu/dev-uws-server/api/v1</span></code>. This is <a class="reference external" href="https://kubernetes.github.io/ingress-nginx/examples/auth/basic/">secured by basic HTTP auth</a> with a k8s Secret <code class="docutils literal notranslate"><span class="pre">uws-server-basic-auth</span></code> that is not provided by the chart. You must manually create this secret to use this secure development URL.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">BASICAUTHUSER</span><span class="o">=</span>client
-<span class="nb">export</span> <span class="nv">BASICAUTHPASS</span><span class="o">=</span><span class="k">$(</span>openssl rand -hex <span class="m">32</span><span class="k">)</span>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">BASICAUTHUSER</span><span class="o">=</span>client
+<span class="nb">export</span><span class="w"> </span><span class="nv">BASICAUTHPASS</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">32</span><span class="k">)</span>
 
-<span class="nb">echo</span> <span class="s2">&quot;The password is: </span><span class="nv">$BASICAUTHPASS</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;The password is: </span><span class="nv">$BASICAUTHPASS</span><span class="s2">&quot;</span>
 
-cat <span class="s">&lt;&lt;EOF | kubectl -n uws apply -f -</span>
+cat<span class="w"> </span><span class="s">&lt;&lt;EOF | kubectl -n uws apply -f -</span>
 <span class="s">apiVersion: v1</span>
 <span class="s">kind: Secret</span>
 <span class="s">metadata:</span>
@@ -251,9 +258,9 @@ cat <span class="s">&lt;&lt;EOF | kubectl -n uws apply -f -</span>
 </pre></div>
 </div>
 <p>See the example Python script <code class="docutils literal notranslate"><span class="pre">client/client.local.py</span></code> that you can use to make requests to the API server remotely using this method.</p>
-</div>
-<div class="section" id="documentation-system">
-<h2>Documentation system<a class="headerlink" href="#documentation-system" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="documentation-system">
+<h2>Documentation system<a class="headerlink" href="#documentation-system" title="Permalink to this heading"></a></h2>
 <p>This documentation is powered by <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx</a>,
 using the reStructuredText (reST) and Markdown formats. With Sphinx installed locally, you can build the HTML files using :</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cd $REPO_ROOT/docs/
@@ -265,9 +272,9 @@ using the reStructuredText (reST) and Markdown formats. With Sphinx installed lo
 that provides a live preview of reST files using the Sphinx theme from
 the most recent build.</p>
 <p><img alt="image" src="_images/vscode_plugin.png" /></p>
-</div>
-<div class="section" id="file-editors-and-viewers">
-<h2>File editors and viewers<a class="headerlink" href="#file-editors-and-viewers" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="file-editors-and-viewers">
+<h2>File editors and viewers<a class="headerlink" href="#file-editors-and-viewers" title="Permalink to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">.drawio</span></code> files require the open source editor from
 <a class="reference external" href="https://www.diagrams.net/">https://www.diagrams.net/</a>.</p>
 <p>The Python extension for VS Code will resolve modules better if you
@@ -281,8 +288,8 @@ via <code class="docutils literal notranslate"><span class="pre">/.gitignore</sp
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

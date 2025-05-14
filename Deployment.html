@@ -1,18 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kubernetes Deployment &mdash; UWS API Server  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
+  <title>Kubernetes Deployment &mdash; UWS API Server  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -24,17 +27,21 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> UWS API Server
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UWS API Server
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api/Readme.html">OCPS Job Manager API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ocps_prototype.html">Rubin OCS Controlled Pipeline System (OCPS) prototype</a><ul>
@@ -93,8 +100,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Kubernetes Deployment</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Kubernetes Deployment</li>
       <li class="wy-breadcrumbs-aside">
               <a href="https://github.com/lsst-dm/uws-api-server/blob/master/docs/Deployment.md" class="fa fa-github"> Edit on GitHub</a>
       </li>
@@ -104,19 +111,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="kubernetes-deployment">
-<h1>Kubernetes Deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this headline">¶</a></h1>
+  <section id="kubernetes-deployment">
+<h1>Kubernetes Deployment<a class="headerlink" href="#kubernetes-deployment" title="Permalink to this heading"></a></h1>
 <p>The UWS currently supports deployment on the NCSA Test Stand (NTS) and the Summit. Common parameter values are captured in the <code class="docutils literal notranslate"><span class="pre">values.yaml</span></code> file of the Helm chart, while environment-specific values (primarily related to persistent volume configuration) are captured by <code class="docutils literal notranslate"><span class="pre">values-nts.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">values-summit.yaml</span></code>.</p>
-<div class="section" id="version-control">
-<h2>Version control<a class="headerlink" href="#version-control" title="Permalink to this headline">¶</a></h2>
+<section id="version-control">
+<h2>Version control<a class="headerlink" href="#version-control" title="Permalink to this heading"></a></h2>
 <p>The UWS application consists of <a class="reference external" href="https://github.com/lsst-dm/charts/tree/master/charts/uws-api-server">the Helm chart defining the deployment</a> and the Docker images run by the containers. These are synchronized using the following versioning system:</p>
 <ul class="simple">
 <li><p>When a stable update is made to the <code class="docutils literal notranslate"><span class="pre">uws-api-server</span></code> source code repo, the Docker image is built, tagged with an incremented version, and pushed. The repo commit is tagged with the same version. GitHub Actions automatically build the <code class="docutils literal notranslate"><span class="pre">latest</span></code> tagged image when the commit is pushed, but the specific version tags must be added and push manually via <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">tag</span></code> and <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">push</span></code>.</p></li>
 <li><p>When a stable update is made to the <code class="docutils literal notranslate"><span class="pre">charts</span></code> Helm chart repo, the Helm chart version is incremented and the repo commit is tagged with the same version. The ArgoCD application should then be updated to reference that Helm chart version.</p></li>
 </ul>
-</div>
-<div class="section" id="argocd">
-<h2>ArgoCD<a class="headerlink" href="#argocd" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="argocd">
+<h2>ArgoCD<a class="headerlink" href="#argocd" title="Permalink to this heading"></a></h2>
 <p>Deployments are managed by the ArgoCD instances running on the two clusters:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Summit</span><span class="p">:</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">summit</span><span class="o">-</span><span class="n">lsp</span><span class="o">.</span><span class="n">lsst</span><span class="o">.</span><span class="n">codes</span><span class="o">/</span><span class="n">argo</span><span class="o">-</span><span class="n">cd</span><span class="o">/</span><span class="n">applications</span><span class="o">/</span><span class="n">uws</span>
 <span class="n">NTS</span><span class="p">:</span>    <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">lsst</span><span class="o">-</span><span class="n">argocd</span><span class="o">-</span><span class="n">nts</span><span class="o">-</span><span class="n">efd</span><span class="o">.</span><span class="n">ncsa</span><span class="o">.</span><span class="n">illinois</span><span class="o">.</span><span class="n">edu</span><span class="o">/</span><span class="n">argo</span><span class="o">-</span><span class="n">cd</span><span class="o">/</span><span class="n">applications</span><span class="o">/</span><span class="n">uws</span>
@@ -124,73 +131,73 @@
 </div>
 <p>Credentials to access these ArgoCD instances is provided via the <code class="docutils literal notranslate"><span class="pre">https://lsstit.1password.com</span></code> password manager account.</p>
 <p>Examples of the ArgoCD Application manifest are shown below (production and development releases), demonstrating how the parameter values are set first by the <code class="docutils literal notranslate"><span class="pre">values.yaml</span></code> file, and then overridden by the <code class="docutils literal notranslate"><span class="pre">values-summit.yaml</span></code> file, and then overridden by the <code class="docutils literal notranslate"><span class="pre">parameters</span></code> section of the <code class="docutils literal notranslate"><span class="pre">Application</span></code> manifest itself. <a class="reference external" href="https://argo-cd.readthedocs.io/en/stable/user-guide/parameters/">Read more about overrides here</a>.</p>
-<div class="section" id="production">
-<h3>Production<a class="headerlink" href="#production" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Application</span>
+<section id="production">
+<h3>Production<a class="headerlink" href="#production" title="Permalink to this heading"></a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Application</span>
 <span class="nt">metadata</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">uws</span>
-  <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">argocd</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uws</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argocd</span>
 <span class="nt">spec</span><span class="p">:</span>
-  <span class="nt">destination</span><span class="p">:</span>
-    <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">uws</span>
-    <span class="nt">server</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">https://kubernetes.default.svc</span>
-  <span class="nt">project</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default</span>
-  <span class="nt">source</span><span class="p">:</span>
-    <span class="nt">helm</span><span class="p">:</span>
-      <span class="nt">valueFiles</span><span class="p">:</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">values.yaml</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">values-summit.yaml</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">charts/uws-api-server</span>
-    <span class="nt">repoURL</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">https://github.com/lsst-dm/charts</span>
-    <span class="nt">targetRevision</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">v1.2.0</span>
+<span class="w">  </span><span class="nt">destination</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uws</span>
+<span class="w">    </span><span class="nt">server</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://kubernetes.default.svc</span>
+<span class="w">  </span><span class="nt">project</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">helm</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">valueFiles</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">values.yaml</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">values-summit.yaml</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">charts/uws-api-server</span>
+<span class="w">    </span><span class="nt">repoURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/lsst-dm/charts</span>
+<span class="w">    </span><span class="nt">targetRevision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.2.0</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="development">
-<h3>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">apiVersion</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Application</span>
+</section>
+<section id="development">
+<h3>Development<a class="headerlink" href="#development" title="Permalink to this heading"></a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Application</span>
 <span class="nt">metadata</span><span class="p">:</span>
-  <span class="nt">name</span><span class="p">:</span> <span class="s">&#39;uws-dev&#39;</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;uws-dev&#39;</span>
 <span class="nt">spec</span><span class="p">:</span>
-  <span class="nt">project</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">default</span>
-  <span class="nt">source</span><span class="p">:</span>
-    <span class="nt">repoURL</span><span class="p">:</span> <span class="s">&#39;https://github.com/lsst-dm/charts&#39;</span>
-    <span class="nt">path</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">charts/uws-api-server</span>
-    <span class="nt">targetRevision</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dev</span>
-    <span class="nt">helm</span><span class="p">:</span>
-      <span class="nt">valueFiles</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">values.yaml</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">values-nts-dev.yaml</span>
-      <span class="nt">parameters</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">logLevel</span>
-          <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">DEBUG</span>
-        <span class="p p-Indicator">-</span> <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">image.tag</span>
-          <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">dev</span>
-  <span class="nt">destination</span><span class="p">:</span>
-    <span class="nt">server</span><span class="p">:</span> <span class="s">&#39;https://kubernetes.default.svc&#39;</span>
-    <span class="nt">namespace</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">uws</span>
+<span class="w">  </span><span class="nt">project</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="w">  </span><span class="nt">source</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">repoURL</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;https://github.com/lsst-dm/charts&#39;</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">charts/uws-api-server</span>
+<span class="w">    </span><span class="nt">targetRevision</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
+<span class="w">    </span><span class="nt">helm</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">valueFiles</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">values.yaml</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">values-nts-dev.yaml</span>
+<span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">logLevel</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image.tag</span>
+<span class="w">          </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
+<span class="w">  </span><span class="nt">destination</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">server</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;https://kubernetes.default.svc&#39;</span>
+<span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uws</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="helm-chart-installation-alternative-to-argocd">
-<h2>Helm chart installation (alternative to ArgoCD)<a class="headerlink" href="#helm-chart-installation-alternative-to-argocd" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="helm-chart-installation-alternative-to-argocd">
+<h2>Helm chart installation (alternative to ArgoCD)<a class="headerlink" href="#helm-chart-installation-alternative-to-argocd" title="Permalink to this heading"></a></h2>
 <p>The Helm chart for <code class="docutils literal notranslate"><span class="pre">uws-api-server</span></code> is in the Helm chart repo https://lsst-dm.github.io/charts/ (see that page for instructions on how to add the Helm repo and its charts).</p>
 <p>To install via Helm, you can clone the source repo (https://github.com/lsst-dm/charts/) and install with</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>helm upgrade --install -n $NAMESPACE \
   uws-api-server charts/uws-api-server/ \
   --values charts/uws-api-server/values.yaml \
-  --values charts/uws-api-server/values-$CLUSTER.yaml 
+  --values charts/uws-api-server/values-$CLUSTER.yaml
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">values-$CLUSTER.yaml</span></code> is the values file specific to the target cluster.</p>
-</div>
-<div class="section" id="kubectl-access">
-<h2>kubectl access<a class="headerlink" href="#kubectl-access" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="kubectl-access">
+<h2>kubectl access<a class="headerlink" href="#kubectl-access" title="Permalink to this heading"></a></h2>
 <p>A convenient method for accessing the Kubernetes cluster is described below. Create an SSH tunnel to the target Kubernetes API server using</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">L</span> <span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">6443</span><span class="p">:</span><span class="mf">141.142</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">Y</span><span class="p">:</span><span class="mi">6443</span> <span class="n">lsst</span><span class="o">-</span><span class="n">login</span><span class="o">.</span><span class="n">ncsa</span><span class="o">.</span><span class="n">illinois</span><span class="o">.</span><span class="n">edu</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">L</span> <span class="mf">127.0.0.1</span><span class="p">:</span><span class="mi">6443</span><span class="p">:</span><span class="mf">141.142</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">Y</span><span class="p">:</span><span class="mi">6443</span> <span class="n">lsst</span><span class="o">-</span><span class="n">login</span><span class="o">.</span><span class="n">ncsa</span><span class="o">.</span><span class="n">illinois</span><span class="o">.</span><span class="n">edu</span>
 </pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">141.142.X.Y</span></code> is the IP address of the API server.</p>
@@ -221,28 +228,28 @@ users:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">KUBECONFIG</span><span class="o">=</span><span class="s2">&quot;$HOME/.kube/config.$TARGET_CLUSTER.proxy&quot;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="issues-with-persistent-volumes">
-<h2>Issues with Persistent Volumes<a class="headerlink" href="#issues-with-persistent-volumes" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="issues-with-persistent-volumes">
+<h2>Issues with Persistent Volumes<a class="headerlink" href="#issues-with-persistent-volumes" title="Permalink to this heading"></a></h2>
 <p>The PV and PVC resources will not upgrade gracefully, because they are immutable when created. They must be deleted and then the ArgoCD app re-synced. However, in this process they will often get stuck in a Terminating state endlessly. To allow them to finish deleting, remove the finalizers by patching the resource definitions as shown in the example below for the PVCs. The same pattern works for the PVs.</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$ kubectl get -n uws pvc -l <span class="nv">app</span><span class="o">=</span>uws-uws-api-server
-NAME             STATUS        VOLUME                             CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-pvc         Terminating   uws-uws-api-server-data-pv         <span class="m">0</span>                                        17h
-home-pvc         Terminating   uws-uws-api-server-home-pv         <span class="m">0</span>                                        17h
-project-pvc      Terminating   uws-uws-api-server-project-pv      <span class="m">0</span>                                        17h
-repo-pvc         Terminating   uws-uws-api-server-repo-pv         <span class="m">0</span>                                        17h
-uws-server-pvc   Terminating   uws-uws-api-server-uws-server-pv   <span class="m">0</span>                                        17h
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>-n<span class="w"> </span>uws<span class="w"> </span>pvc<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>uws-uws-api-server
+NAME<span class="w">             </span>STATUS<span class="w">        </span>VOLUME<span class="w">                             </span>CAPACITY<span class="w">   </span>ACCESS<span class="w"> </span>MODES<span class="w">   </span>STORAGECLASS<span class="w">   </span>AGE
+data-pvc<span class="w">         </span>Terminating<span class="w">   </span>uws-uws-api-server-data-pv<span class="w">         </span><span class="m">0</span><span class="w">                                        </span>17h
+home-pvc<span class="w">         </span>Terminating<span class="w">   </span>uws-uws-api-server-home-pv<span class="w">         </span><span class="m">0</span><span class="w">                                        </span>17h
+project-pvc<span class="w">      </span>Terminating<span class="w">   </span>uws-uws-api-server-project-pv<span class="w">      </span><span class="m">0</span><span class="w">                                        </span>17h
+repo-pvc<span class="w">         </span>Terminating<span class="w">   </span>uws-uws-api-server-repo-pv<span class="w">         </span><span class="m">0</span><span class="w">                                        </span>17h
+uws-server-pvc<span class="w">   </span>Terminating<span class="w">   </span>uws-uws-api-server-uws-server-pv<span class="w">   </span><span class="m">0</span><span class="w">                                        </span>17h
 
-$ kubectl patch -n uws pvc -p <span class="s1">&#39;{&quot;metadata&quot;:{&quot;finalizers&quot;:null}}&#39;</span> data-pvc home-pvc project-pvc repo-pvc uws-server-pvc
-persistentvolumeclaim/data-pvc patched
-persistentvolumeclaim/home-pvc patched
-persistentvolumeclaim/project-pvc patched
-persistentvolumeclaim/repo-pvc patched
-persistentvolumeclaim/uws-server-pvc patched
+$<span class="w"> </span>kubectl<span class="w"> </span>patch<span class="w"> </span>-n<span class="w"> </span>uws<span class="w"> </span>pvc<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;metadata&quot;:{&quot;finalizers&quot;:null}}&#39;</span><span class="w"> </span>data-pvc<span class="w"> </span>home-pvc<span class="w"> </span>project-pvc<span class="w"> </span>repo-pvc<span class="w"> </span>uws-server-pvc
+persistentvolumeclaim/data-pvc<span class="w"> </span>patched
+persistentvolumeclaim/home-pvc<span class="w"> </span>patched
+persistentvolumeclaim/project-pvc<span class="w"> </span>patched
+persistentvolumeclaim/repo-pvc<span class="w"> </span>patched
+persistentvolumeclaim/uws-server-pvc<span class="w"> </span>patched
 </pre></div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

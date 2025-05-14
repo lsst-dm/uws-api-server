@@ -6,9 +6,9 @@ Prototype
 
 .. image:: images/Prompt_processing_architecture_sketch.png
 
-The prototype OCPS Job Manager is designed as an evolving demonstration of the emerging system. 
+The prototype OCPS Job Manager is designed as an evolving demonstration of the emerging system.
 
-The prototype consists of a server and a client. 
+The prototype consists of a server and a client.
 
 * The server is a `Tornado-based webserver <https://www.tornadoweb.org/en/stable/>`_ written in Python.
 * The client represents the OCPS CSC that will ultimately be submitting jobs and fetching the results. The client is a Python script that could in principle be executed on any machine that can access the OCPS Job Manager HTTP port.
@@ -37,7 +37,7 @@ The prototype client (the ``client/client.py`` module) provides some wrapper fun
 Jobs
 ----------------------
 
-Jobs run as Kubernetes Jobs. The container image for each job is the ``lsstsqre/centos:d_latest`` Docker image.
+Jobs run as Kubernetes Jobs. The container image for each job is selected by configuration.
 
 There are environment variables set for all jobs for use by executing scripts:
 
@@ -55,9 +55,9 @@ There are environment variables set for all jobs for use by executing scripts:
 Create a job::
 
   PUT /api/v1/job
-  
+
   Parameters:
-  
+
     command - command to execute
     run_id - custom identifier for client use only
     environment - array of objects with name and value specifying the environment variables for the executing script
@@ -67,9 +67,9 @@ Create a job::
 Get info about a specific job with ID ``{jobId}``::
 
   GET /api/v1/job/{jobId}
-  
+
   Response:
-  
+
   {
       "jobId": "e13ed9f2803842409763b185d4f490e2",
       "runId": "my-special-job",
@@ -123,9 +123,9 @@ Get info about a specific job with ID ``{jobId}``::
 List jobs that are executing::
 
   GET /api/v1/job?phase=executing
-  
+
   Response:
-  
+
   [
     {
       "jobId": "e13ed9f2803842409763b185d4f490e2",
@@ -150,13 +150,13 @@ List jobs that are executing::
       ...
     }
   ]
-  
+
 Get the phase of job with ID ``{jobId}``::
 
   GET /api/v1/job/{jobId}/phase
-  
+
   Response:
-  
+
   "completed"
 
 Job results are defined as the files generated during execution in the job output folder, whose path is available to the job script via an environment variable ``$JOB_OUTPUT_DIR``. The UWS job object spec recommends an ID and a URI. Our URI is the path to the result file and the ID is the base64-encoded version of that path string, which is amenable to URLs and has the benefit of encoding the files universally unique path on disk (since the job UUID is part of the file path).
@@ -164,20 +164,20 @@ Job results are defined as the files generated during execution in the job outpu
 Get the results of job with ID ``{jobId}``::
 
   GET /api/v1/job/{jobId}/results
-  
+
   Response:
-  
+
   [
     {
       "id": "L3V3cy9qb2JzL2UxM2VkOWYyODAzODQyNDA5NzYzYjE4NWQ0ZjQ5MGUyL291dC9kaXJsaXN0LnR4dA==",
       "uri": "/uws/jobs/{jobId}/out/dirlist.txt"
     }
   ]
- 
+
 Download a job result file from job with result ID ``{resultId}``::
 
   GET /api/v1/job/result/{resultId}
-  
+
   Response:
-  
+
   (requested file)

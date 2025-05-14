@@ -9,11 +9,11 @@ This repo implements a Universal Worker Service (UWS) API server for the Vera C.
 .. admonition:: Quick Start
 
     **Developer Quick Start**
-    
+
     If you are a developer new to the UWS system, get started quickly by following these steps:
 
     1. Familiarize yourself with the :ref:`system-components`.
-    2. 
+    2.
 
 .. toctree::
     :maxdepth: 2
@@ -29,7 +29,7 @@ This repo implements a Universal Worker Service (UWS) API server for the Vera C.
 System components
 ------------------------------
 
-The OCPS system consists of several components. 
+The OCPS system consists of several components.
 
 Docker images
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
